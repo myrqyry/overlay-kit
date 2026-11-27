@@ -1,0 +1,51 @@
+/*
+ * Composable wall aesthetics: material × color × edge finish.
+ * All passes are applied to the combined emote artwork, not a square tile.
+ * Keep their definitions independent so a material never replaces a finish.
+ */
+[data-wall-style] .overlay-wall-visual > .overlay-emote,
+[data-wall-style] .overlay-wall-fragment > .overlay-emote,
+[data-wall-style] .overlay-wall-echo > .overlay-emote {
+  filter: var(--wall-color-filter, ) var(--wall-material-filter, ) var(--wall-edge-filter, );
+}
+
+/* Materials */
+[data-wall-style="cut-paper"] {
+  --wall-material-filter:
+    drop-shadow(1px 1px 0 rgba(245, 233, 210, .82))
+    drop-shadow(2px 3px 1px rgba(81, 65, 64, .45))
+    drop-shadow(4px 5px 4px rgba(28, 23, 27, .25));
+}
+[data-wall-style="ink-wash"] {
+  --wall-material-filter: var(--wall-ink-filter, none) sepia(.06) contrast(1.04);
+}
+
+[data-wall-style="holo-foil"] {
+  --wall-material-filter: var(--wall-holo-filter, none);
+}
+
+/* Color treatments — operate on the actual layered image. */
+[data-wall-color="soft"] {
+  --wall-color-filter: saturate(.66) contrast(.9) brightness(1.07);
+}
+[data-wall-color="vivid"] {
+  --wall-color-filter: saturate(1.7) contrast(1.13);
+}
+[data-wall-color="monochrome"] {
+  --wall-color-filter: grayscale(1) contrast(1.13);
+}
+[data-wall-color="warm"] {
+  --wall-color-filter: sepia(.28) saturate(1.14) hue-rotate(-11deg);
+}
+
+/* Edge finishes — no surrounding geometric shapes. */
+[data-wall-finish="halo"] {
+  --wall-edge-filter:
+    drop-shadow(0 0 3px rgba(246, 218, 182, .72))
+    drop-shadow(0 0 9px rgba(226, 198, 231, .38));
+}
+[data-wall-finish="relief"] {
+  --wall-edge-filter:
+    drop-shadow(-1px -1px 0 rgba(255, 253, 241, .77))
+    drop-shadow(2px 2px 1px rgba(44, 37, 53, .47));
+}

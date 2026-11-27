@@ -1,0 +1,441 @@
+/* Gold-ratio-derived motion hierarchy: broad movement remains calm and
+   user durations/amplitudes remain authoritative. No new motion owner. */
+.overlay-wall-item {
+  --wall-ambient-ease: cubic-bezier(.38,0,.62,1);
+  --wall-enter-ease: cubic-bezier(.18,.79,.22,1);
+  --wall-exit-ease: cubic-bezier(.42,0,.82,.48);
+}
+.overlay-wall-item { will-change: transform; transform-origin: center; }
+/* Physical collision drives the individual translate property, not path keyframes. */
+.overlay-wall-item[data-motion="collide"] { will-change: translate; }
+.overlay-wall-item[data-motion="float"] { animation: wall-float var(--wall-period,7s) var(--wall-ambient-ease) infinite alternate; animation-delay: var(--wall-phase,0s); }
+.overlay-wall-item[data-motion="bounce"] { animation: wall-bounce var(--wall-period,7s) var(--wall-ambient-ease) infinite alternate; animation-delay: var(--wall-phase,0s); }
+.overlay-wall-item[data-motion="burst"] { animation: wall-burst var(--wall-period,7s) cubic-bezier(.2,.8,.1,1) both; }
+@keyframes wall-float {
+  0% {transform:translate3d(calc(-1 * var(--wall-distance,24px)),var(--wall-distance,24px),0) rotate(-4deg);}
+  38.2% {transform:translate3d(calc(var(--wall-distance,24px) * -.236),calc(var(--wall-distance,24px) * .236),0) rotate(-1deg);}
+  61.8% {transform:translate3d(calc(var(--wall-distance,24px) * .236),calc(var(--wall-distance,24px) * -.236),0) rotate(1deg);}
+  100% {transform:translate3d(var(--wall-distance,24px),calc(-1 * var(--wall-distance,24px)),0) rotate(5deg);}
+}
+@keyframes wall-bounce {
+  0% {transform:translateY(calc(-1 * var(--wall-distance,24px))) rotate(-2deg);}
+  38.2% {transform:translateY(calc(var(--wall-distance,24px) * -.236)) rotate(-.7deg);}
+  61.8% {transform:translateY(calc(var(--wall-distance,24px) * .236)) rotate(.7deg);}
+  100% {transform:translateY(var(--wall-distance,24px)) rotate(2deg);}
+}
+@keyframes wall-burst { from { transform:scale(.15) rotate(-160deg); opacity:0; } to { transform:scale(1) rotate(0);opacity:1; } }
+
+/* Independent wall motion layers: root handles placement and continuing motion;
+   its inner visual handles one-shot entrance/expiry. No geometry animation. */
+.overlay-wall-item {
+  transform-origin: center;
+}
+.overlay-wall-visual {
+  width: max-content;
+  height: 100%;
+  transform-origin: center;
+  pointer-events: none;
+}
+.overlay-wall-item[data-motion="float"],
+.overlay-wall-item[data-motion="bounce"],
+.overlay-wall-item[data-motion="orbit"],
+.overlay-wall-item[data-motion="sway"],
+.overlay-wall-item[data-motion="flutter"] {
+  animation-delay: var(--wall-phase, 0s);
+}
+.overlay-wall-item[data-motion="orbit"] {
+  animation: wall-orbit var(--wall-period,7s) linear infinite;
+  animation-delay: var(--wall-phase,0s);
+}
+.overlay-wall-item[data-motion="sway"] {
+  animation: wall-sway var(--wall-period,7s) var(--wall-ambient-ease) infinite alternate;
+  animation-delay: var(--wall-phase,0s);
+}
+.overlay-wall-item[data-motion="flutter"] {
+  animation: wall-flutter var(--wall-period,7s) var(--wall-ambient-ease) infinite;
+  animation-delay: var(--wall-phase,0s);
+}
+@keyframes wall-orbit {
+  0% { transform: translate3d(0,calc(-1 * var(--wall-distance,24px)),0) rotate(-6deg); }
+  25% { transform: translate3d(var(--wall-distance,24px),0,0) rotate(6deg); }
+  50% { transform: translate3d(0,var(--wall-distance,24px),0) rotate(-6deg); }
+  75% { transform: translate3d(calc(-1 * var(--wall-distance,24px)),0,0) rotate(6deg); }
+  100% { transform: translate3d(0,calc(-1 * var(--wall-distance,24px)),0) rotate(-6deg); }
+}
+@keyframes wall-sway {
+  0% {transform:translate3d(calc(-1 * var(--wall-distance,24px)),0,0) rotate(-6deg);}
+  38.2% {transform:translate3d(calc(var(--wall-distance,24px) * -.236),0,0) rotate(-2deg);}
+  61.8% {transform:translate3d(calc(var(--wall-distance,24px) * .236),0,0) rotate(2deg);}
+  100% {transform:translate3d(var(--wall-distance,24px),0,0) rotate(6deg);}
+}
+@keyframes wall-flutter {
+  0%,100% {transform:translate3d(0,0,0) rotate(-4deg) scale(1);}
+  19.1% {transform:translate3d(calc(var(--wall-distance,24px) * .31),calc(var(--wall-distance,24px) * -.38),0) rotate(5deg) scale(.98);}
+  38.2% {transform:translate3d(calc(var(--wall-distance,24px) * .62),calc(var(--wall-distance,24px) * -.26),0) rotate(7deg) scale(.97);}
+  61.8% {transform:translate3d(var(--wall-distance,24px),0,0) rotate(-5deg) scale(1.035);}
+  80.9% {transform:translate3d(calc(var(--wall-distance,24px) * .38),calc(var(--wall-distance,24px) * .31),0) rotate(4deg) scale(.985);}
+}
+.overlay-wall-visual[data-wall-enter="fade"]:not([data-wall-phase="exiting"]) {
+  animation: wall-in-fade var(--wall-enter-duration,340ms) ease-out both;
+}
+.overlay-wall-visual[data-wall-enter="pop"]:not([data-wall-phase="exiting"]) {
+  animation: wall-in-pop var(--wall-enter-duration,340ms) cubic-bezier(.22,.85,.21,1) both;
+}
+.overlay-wall-visual[data-wall-enter="drop"]:not([data-wall-phase="exiting"]) {
+  animation: wall-in-drop var(--wall-enter-duration,340ms) cubic-bezier(.22,.85,.21,1) both;
+}
+.overlay-wall-visual[data-wall-enter="slide"]:not([data-wall-phase="exiting"]) {
+  animation: wall-in-slide var(--wall-enter-duration,340ms) ease-out both;
+}
+.overlay-wall-visual[data-wall-enter="spin"]:not([data-wall-phase="exiting"]) {
+  animation: wall-in-spin var(--wall-enter-duration,340ms) cubic-bezier(.22,.85,.21,1) both;
+}
+/* Short transform-only arrivals on the visual, independent of the moving sprite. */
+.overlay-wall-visual[data-wall-enter="unfurl"]:not([data-wall-phase="exiting"]) {
+  transform-origin: 15% 55%;
+  animation: wall-in-unfurl var(--wall-enter-duration,340ms) cubic-bezier(.2,.85,.18,1) both;
+}
+.overlay-wall-visual[data-wall-enter="spring"]:not([data-wall-phase="exiting"]) {
+  animation: wall-in-spring var(--wall-enter-duration,340ms) cubic-bezier(.18,.8,.2,1) both;
+}
+@keyframes wall-in-unfurl {from {opacity:0;transform:perspective(420px) rotateY(-78deg) scaleX(.7)} to {opacity:1;transform:perspective(420px) rotateY(0deg) scaleX(1)}}
+@keyframes wall-in-spring {
+  0% {opacity:0;transform:translate3d(0,18px,0) scale(.618) rotate(-6deg)}
+  61.8% {opacity:1;transform:translate3d(0,-3px,0) scale(1.06) rotate(1.5deg)}
+  80.9% {transform:translate3d(0,1px,0) scale(.988) rotate(-.4deg)}
+  100% {opacity:1;transform:none}
+}
+@keyframes wall-in-fade { from { opacity:0; } to { opacity:1; } }
+@keyframes wall-in-pop {
+  0% {opacity:0;transform:scale(.618)}
+  61.8% {opacity:1;transform:scale(1.055)}
+  100% {opacity:1;transform:scale(1)}
+}
+@keyframes wall-in-drop {
+  0% {opacity:0;transform:translate3d(0,-48px,0) scale(.92)}
+  61.8% {opacity:1;transform:translate3d(0,2px,0) scale(1.012)}
+  100% {opacity:1;transform:none}
+}
+@keyframes wall-in-slide { from {opacity:0;transform:translate3d(-70px,0,0);} to {opacity:1;transform:translate3d(0,0,0);} }
+@keyframes wall-in-spin { from {opacity:0;transform:scale(.25) rotate(-270deg);} to {opacity:1;transform:scale(1) rotate(0);} }
+
+
+/* Temporary alpha-aware color passes on the outer visual wrapper.
+   Existing material/color/edge filters stay on the inner layered artwork.
+   At rest, every entrance returns to filter:none and the source art is unchanged.
+   These are deliberately palette-driven, not inferred dominant emote colors. */
+.overlay-wall-visual[data-wall-enter="color-bloom"]:not([data-wall-phase="exiting"]) {
+  animation: wall-in-color-bloom var(--wall-enter-duration,340ms) ease-out backwards;
+}
+.overlay-wall-visual[data-wall-enter="prism-reveal"]:not([data-wall-phase="exiting"]) {
+  animation: wall-in-prism-reveal var(--wall-enter-duration,340ms) cubic-bezier(.18,.8,.2,1) backwards;
+}
+.overlay-wall-visual[data-wall-enter="pigment-wash"]:not([data-wall-phase="exiting"]) {
+  animation: wall-in-pigment-wash var(--wall-enter-duration,340ms) ease-out backwards;
+}
+@keyframes wall-in-color-bloom {
+  0% { opacity:0; transform:scale(.62);
+    filter:brightness(1.9) saturate(2.7) drop-shadow(0 0 12px rgba(255,192,125,.9)); }
+  55% { opacity:1; transform:scale(1.06);
+    filter:brightness(1.25) saturate(1.8) drop-shadow(0 0 7px rgba(230,173,255,.65)); }
+  100% {opacity:1; transform:scale(1);filter:none;}
+}
+@keyframes wall-in-prism-reveal {
+  0% {opacity:0; transform:translate3d(-7px,3px,0) scale(.82);
+    filter:hue-rotate(130deg) saturate(2.2) drop-shadow(-4px 0 0 rgba(119,211,255,.7)) drop-shadow(4px 0 0 rgba(255,139,176,.65));}
+  60% {opacity:1; transform:translate3d(2px,0,0) scale(1.03);
+    filter:hue-rotate(-38deg) saturate(1.45) drop-shadow(-1px 0 0 rgba(160,225,255,.35));}
+  100% {opacity:1;transform:none;filter:none;}
+}
+@keyframes wall-in-pigment-wash {
+  0% {opacity:0;transform:scale(.93);
+    filter:grayscale(1) sepia(.85) saturate(2.1) hue-rotate(-16deg) brightness(1.4);}
+  45% {opacity:.8;transform:scale(1.025);
+    filter:sepia(.55) saturate(1.45) brightness(1.12);}
+  100% {opacity:1;transform:scale(1);filter:none;}
+}
+
+.overlay-wall-visual[data-wall-phase="exiting"][data-wall-exit="fade"] {
+  animation: wall-out-fade var(--wall-exit-duration,260ms) ease-in both;
+}
+.overlay-wall-visual[data-wall-phase="exiting"][data-wall-exit="shrink"] {
+  animation: wall-out-shrink var(--wall-exit-duration,260ms) ease-in both;
+}
+.overlay-wall-visual[data-wall-phase="exiting"][data-wall-exit="drift"] {
+  animation: wall-out-drift var(--wall-exit-duration,260ms) ease-in both;
+}
+.overlay-wall-visual[data-wall-phase="exiting"][data-wall-exit="sink"] {
+  animation: wall-out-sink var(--wall-exit-duration,260ms) ease-in both;
+}
+.overlay-wall-visual[data-wall-phase="exiting"][data-wall-exit="spin"] {
+  animation: wall-out-spin var(--wall-exit-duration,260ms) ease-in both;
+}
+/* Natural expiry on the inner visual, leaving outer placement/motion untouched. */
+.overlay-wall-visual[data-wall-phase="exiting"][data-wall-exit="lift"] {
+  animation: wall-out-lift var(--wall-exit-duration,260ms) ease-in both;
+}
+.overlay-wall-visual[data-wall-phase="exiting"][data-wall-exit="tumble"] {
+  animation: wall-out-tumble var(--wall-exit-duration,260ms) ease-in both;
+}
+.overlay-wall-visual[data-wall-phase="exiting"][data-wall-exit="flip"] {animation:wall-out-flip var(--wall-exit-duration,260ms) ease-in both;}
+.overlay-wall-visual[data-wall-phase="exiting"][data-wall-exit="spring"] {animation:wall-out-spring var(--wall-exit-duration,260ms) ease-in both;}
+@keyframes wall-out-lift {from {opacity:1;transform:none} to {opacity:0;transform:translate3d(0,-46px,0) scale(.88)}}
+@keyframes wall-out-tumble {from {opacity:1;transform:none} to {opacity:0;transform:translate3d(25px,22px,0) rotate(105deg) scale(.58)}}
+@keyframes wall-out-flip {from {opacity:1;transform:none} to {opacity:0;transform:perspective(420px) rotateY(83deg) scale(.8)}}
+@keyframes wall-out-spring {0% {opacity:1;transform:none} 30% {transform:translateY(-8px) scale(1.08)} 100% {opacity:0;transform:translateY(28px) scale(.25)}}
+@keyframes wall-out-fade {
+  0% {opacity:1}
+  38.2% {opacity:.93}
+  100% {opacity:0}
+}
+@keyframes wall-out-shrink { from {opacity:1;transform:scale(1);} to {opacity:0;transform:scale(.12);} }
+@keyframes wall-out-drift {
+  0% {opacity:1;transform:translate3d(0,0,0)}
+  38.2% {opacity:.92;transform:translate3d(16px,-12px,0)}
+  100% {opacity:0;transform:translate3d(54px,-42px,0)}
+}
+@keyframes wall-out-sink { from {opacity:1;transform:translate3d(0,0,0);} to {opacity:0;transform:translate3d(0,65px,0);} }
+@keyframes wall-out-spin { from {opacity:1;transform:scale(1) rotate(0);} to {opacity:0;transform:scale(.15) rotate(250deg);} }
+
+
+.overlay-wall-visual[data-wall-phase="exiting"][data-wall-exit="color-drain"] {
+  animation: wall-out-color-drain var(--wall-exit-duration,260ms) ease-in both;
+}
+.overlay-wall-visual[data-wall-phase="exiting"][data-wall-exit="prism-dissolve"] {
+  animation: wall-out-prism-dissolve var(--wall-exit-duration,260ms) ease-in both;
+}
+.overlay-wall-visual[data-wall-phase="exiting"][data-wall-exit="afterglow"] {
+  animation: wall-out-afterglow var(--wall-exit-duration,260ms) ease-in both;
+}
+@keyframes wall-out-color-drain {
+  0% {opacity:1;filter:none;transform:scale(1);}
+  50% {opacity:.8;filter:grayscale(.85) saturate(.35) brightness(1.25);}
+  100% {opacity:0;filter:grayscale(1) brightness(1.7) drop-shadow(0 0 8px rgba(173,202,241,.55));transform:scale(.92);}
+}
+@keyframes wall-out-prism-dissolve {
+  0% {opacity:1;filter:none;transform:translate3d(0,0,0) scale(1);}
+  55% {opacity:.8;filter:hue-rotate(-90deg) saturate(2.2) drop-shadow(-3px 0 0 rgba(139,231,234,.7)) drop-shadow(3px 0 0 rgba(255,158,195,.55));transform:translate3d(3px,-2px,0) scale(1.03);}
+  100% {opacity:0;filter:hue-rotate(130deg) saturate(2.5);transform:translate3d(9px,-7px,0) scale(.8);}
+}
+@keyframes wall-out-afterglow {
+  0% {opacity:1;filter:none;transform:scale(1);}
+  55% {opacity:.9;filter:brightness(1.4) saturate(1.55) drop-shadow(0 0 8px rgba(253,189,133,.8));transform:scale(1.08);}
+  100% {opacity:0;filter:brightness(1.6) saturate(.6) drop-shadow(0 0 15px rgba(220,163,255,.45));transform:scale(1.16);}
+}
+@media (prefers-reduced-motion: reduce) {
+  .overlay-wall-visual { animation:none !important; }
+}
+
+/* Optional analog afterimages: actual layered artwork clones, short-lived. */
+.overlay-wall-visual {
+  position: relative;
+}
+.overlay-wall-echo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: max-content;
+  height: 100%;
+  pointer-events: none;
+  filter: sepia(.24) saturate(.75) contrast(1.05);
+  transform-origin: center;
+}
+/* One low-cost canvas behind emote DOM artwork; it never blocks input. */
+.overlay-wall-constellation {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .overlay-wall-echo { display: none; }
+}
+
+/* Optional GSAP cinematic art effects. Tile clipping is fixed; only transforms
+   and opacity animate. The full artwork supplies intrinsic aspect ratio.
+   Static decorative helpers never participate in layout or pointer events. */
+.overlay-wall-fragment {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+}
+.overlay-wall-fragment > * {
+  width: max-content;
+  height: 100%;
+}
+.overlay-wall-impact-ring {
+  position: absolute;
+  inset: -18%;
+  border: 2px solid rgba(255, 226, 177, .76);
+  border-radius: 48%;
+  box-shadow: 0 0 0 1px rgba(84, 58, 48, .28);
+  pointer-events: none;
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+}
+.overlay-wall-impact-ring:nth-of-type(2) {
+  border-color: rgba(221, 168, 132, .6);
+}
+.overlay-wall-comet-trail {
+  position: absolute;
+  top: 28%;
+  right: 35%;
+  width: 230%;
+  height: 35%;
+  background: linear-gradient(90deg,
+    transparent 0%, rgba(214, 161, 126, .03) 20%,
+    rgba(248, 211, 170, .23) 64%, rgba(255, 232, 194, .65) 98%);
+  border-radius: 100%;
+  pointer-events: none;
+  transform-origin: 100% 50%;
+  will-change: transform, opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .overlay-wall-fragment,
+  .overlay-wall-impact-ring,
+  .overlay-wall-comet-trail { display:none !important; }
+}
+
+/* Still-image adaptations of the Chat text specimens.
+   The whole alpha-bearing visual animates; underlying material/color/edge
+   effects stay on its child artwork. One-shot only, with no extra DOM/timers.
+   Backwards fill drops transient blur/clip/drop-shadow after arrival. */
+.overlay-wall-visual[data-wall-enter="blur-focus"]:not([data-wall-phase="exiting"]) {
+  animation: wall-in-blur-focus var(--wall-enter-duration,340ms) ease-out backwards;
+}
+.overlay-wall-visual[data-wall-enter="curtain-wipe"]:not([data-wall-phase="exiting"]) {
+  animation: wall-in-curtain-wipe var(--wall-enter-duration,340ms) cubic-bezier(.62,0,.18,1) backwards;
+}
+.overlay-wall-visual[data-wall-enter="glitch-split"]:not([data-wall-phase="exiting"]) {
+  animation: wall-in-glitch-split var(--wall-enter-duration,340ms) steps(8,end) backwards;
+}
+.overlay-wall-visual[data-wall-enter="dissolve"]:not([data-wall-phase="exiting"]) {
+  animation: wall-in-dissolve var(--wall-enter-duration,340ms) ease-out backwards;
+}
+.overlay-wall-visual[data-wall-enter="split-flap"]:not([data-wall-phase="exiting"]) {
+  transform-origin: 50% 100%;
+  animation: wall-in-split-flap var(--wall-enter-duration,340ms) cubic-bezier(.22,.85,.21,1) backwards;
+}
+.overlay-wall-visual[data-wall-enter="fold-collapse"]:not([data-wall-phase="exiting"]) {
+  transform-origin: 50% 0;
+  animation: wall-in-fold-collapse var(--wall-enter-duration,340ms) cubic-bezier(.22,.85,.21,1) backwards;
+}
+@keyframes wall-in-blur-focus {
+  0% { opacity:0; filter:blur(13px); transform:scale(1.13); }
+  60% { opacity:1; filter:blur(3px); transform:scale(1.025); }
+  100% { opacity:1; filter:none; transform:none; }
+}
+@keyframes wall-in-curtain-wipe {
+  0% { clip-path:inset(0 100% 0 0); }
+  100% { clip-path:inset(0); }
+}
+@keyframes wall-in-glitch-split {
+  0% { opacity:0; clip-path:inset(45% 0 40% 0); transform:translate3d(-5px,2px,0) skewX(8deg); filter:drop-shadow(-5px 0 0 #fc638d) drop-shadow(5px 0 0 #4fd8e8); }
+  18% { opacity:1; clip-path:inset(0 0 60% 0); transform:translate3d(4px,-3px,0) skewX(-7deg); filter:drop-shadow(4px 0 0 #fc638d) drop-shadow(-4px 0 0 #4fd8e8); }
+  38% { clip-path:inset(55% 0 0 0); transform:translate3d(-3px,2px,0); filter:drop-shadow(-3px 0 0 #fc638d) drop-shadow(3px 0 0 #4fd8e8); }
+  56% { clip-path:inset(0 0 28% 0); transform:translate3d(3px,0,0); filter:drop-shadow(3px 0 0 #fc638d) drop-shadow(-3px 0 0 #4fd8e8); }
+  78% { clip-path:inset(0); transform:translate3d(-1px,0,0); filter:drop-shadow(-1px 0 0 #fc638d) drop-shadow(1px 0 0 #4fd8e8); }
+  100% { opacity:1; clip-path:inset(0); transform:none; filter:none; }
+}
+@keyframes wall-in-dissolve {
+  0% { opacity:0; filter:blur(17px) contrast(.7); transform:scale(.88); }
+  40% { opacity:.45; filter:blur(9px) contrast(.85); transform:scale(.95); }
+  75% { opacity:.9; filter:blur(2px); transform:scale(1.02); }
+  100% { opacity:1; filter:none; transform:none; }
+}
+@keyframes wall-in-split-flap {
+  0% { transform:perspective(550px) rotateX(-88deg) scaleY(.55); }
+  56% { transform:perspective(550px) rotateX(24deg) scaleY(1.06); }
+  82% { transform:perspective(550px) rotateX(-7deg); }
+  100% { transform:none; }
+}
+@keyframes wall-in-fold-collapse {
+  0% { opacity:0; transform:perspective(540px) rotateX(-100deg) scaleY(.25); }
+  55% { opacity:1; transform:perspective(540px) rotateX(17deg) scaleY(1.07); }
+  80% { transform:perspective(540px) rotateX(-5deg) scaleY(.98); }
+  100% { opacity:1; transform:none; }
+}
+
+/* Image-adapted exits: full intrinsic-alpha layered emote, independent of
+   outer float/orbit movement and underlying Material/Color/Edge filters.
+   All effects end once, with the existing animationend + timeout teardown. */
+.overlay-wall-visual[data-wall-phase="exiting"][data-wall-exit="blur-out"] {
+  animation: wall-out-blur-out var(--wall-exit-duration,260ms) ease-in both;
+}
+.overlay-wall-visual[data-wall-phase="exiting"][data-wall-exit="curtain-close"] {
+  animation: wall-out-curtain-close var(--wall-exit-duration,260ms) cubic-bezier(.62,0,.18,1) both;
+}
+.overlay-wall-visual[data-wall-phase="exiting"][data-wall-exit="glitch-split"] {
+  animation: wall-out-glitch-split var(--wall-exit-duration,260ms) steps(8,end) both;
+}
+.overlay-wall-visual[data-wall-phase="exiting"][data-wall-exit="dissolve"] {
+  animation: wall-out-dissolve var(--wall-exit-duration,260ms) ease-in both;
+}
+.overlay-wall-visual[data-wall-phase="exiting"][data-wall-exit="split-flap"] {
+  transform-origin:50% 100%;
+  animation: wall-out-split-flap var(--wall-exit-duration,260ms) ease-in both;
+}
+.overlay-wall-visual[data-wall-phase="exiting"][data-wall-exit="fold-collapse"] {
+  transform-origin:50% 0;
+  animation: wall-out-fold-collapse var(--wall-exit-duration,260ms) ease-in both;
+}
+@keyframes wall-out-blur-out {
+  0% {opacity:1;filter:none;transform:none}
+  100% {opacity:0;filter:blur(16px);transform:scale(1.12)}
+}
+@keyframes wall-out-curtain-close {
+  from {clip-path:inset(0)}
+  to {clip-path:inset(0 0 0 100%)}
+}
+@keyframes wall-out-glitch-split {
+  0% {opacity:1;filter:none;clip-path:inset(0);transform:none}
+  18% {filter:drop-shadow(-4px 0 #f75b90) drop-shadow(4px 0 #4dd8ec);transform:translateX(-3px);clip-path:inset(0 0 18% 0)}
+  40% {filter:drop-shadow(4px 0 #f75b90) drop-shadow(-4px 0 #4dd8ec);transform:translateX(4px) skewX(7deg);clip-path:inset(50% 0 0 0)}
+  64% {transform:translateX(-4px) skewX(-8deg);clip-path:inset(0 0 55% 0)}
+  100% {opacity:0;filter:none;transform:translateX(8px);clip-path:inset(45% 0 50% 0)}
+}
+@keyframes wall-out-dissolve {
+  0% {opacity:1;filter:none;transform:none}
+  55% {opacity:.58;filter:blur(5px);transform:translateY(-4px)}
+  100% {opacity:0;filter:blur(18px);transform:translateY(-9px) scale(.88)}
+}
+@keyframes wall-out-split-flap {
+  0% {opacity:1;transform:none}
+  30% {transform:perspective(540px) rotateX(22deg)}
+  100% {opacity:0;transform:perspective(540px) rotateX(90deg) scaleY(.45)}
+}
+@keyframes wall-out-fold-collapse {
+  0% {opacity:1;transform:none}
+  40% {transform:perspective(540px) rotateX(-26deg)}
+  100% {opacity:0;transform:perspective(540px) rotateX(-94deg) scaleY(.24)}
+}
+
+/* One-shot easing applies to the visual only. Existing path motion and
+   inner material/color/edge artwork retain independent transforms/filters.
+   Discrete glitch modes intentionally retain their steps() curves. */
+.overlay-wall-visual[data-wall-enter]:not([data-wall-enter="none"]):not([data-wall-enter="glitch-split"]):not([data-wall-phase="exiting"]) {
+  animation-timing-function:var(--wall-enter-ease);
+}
+.overlay-wall-visual[data-wall-phase="exiting"][data-wall-exit]:not([data-wall-exit="glitch-split"]) {
+  animation-timing-function:var(--wall-exit-ease);
+}
+
+/* Reduced-motion must stop the OUTER perpetual path as well as the
+   inner one-shot visual; this previously kept floating indefinitely.
+   Manual/still modes and non-CSS collision state are not altered here. */
+@media (prefers-reduced-motion: reduce) {
+  .overlay-wall-item[data-motion="float"],
+  .overlay-wall-item[data-motion="bounce"],
+  .overlay-wall-item[data-motion="orbit"],
+  .overlay-wall-item[data-motion="sway"],
+  .overlay-wall-item[data-motion="flutter"],
+  .overlay-wall-item[data-motion="burst"] {
+    animation:none !important;
+    transform:none !important;
+  }
+}

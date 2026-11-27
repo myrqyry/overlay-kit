@@ -1,0 +1,174 @@
+/* A single contained, paint-only layer. Triggers never touch message layout. */
+.overlay-trigger-surface{
+  position:fixed;inset:0;z-index:12;overflow:hidden;
+  pointer-events:none;isolation:isolate;contain:paint;
+  color:#f4eedf;font-family:system-ui,sans-serif;
+}
+.overlay-trigger-surface[hidden]{display:none}
+.overlay-trigger-scene{
+  position:absolute;inset:0;pointer-events:none;isolation:isolate;contain:paint;
+  opacity:0;
+  /* Two overlapping, individually bounded animations: arrival, held body,
+     then a quiet release before the director removes the entire scene. */
+  animation:
+    trigger-stage-in var(--trigger-enter-ms,334ms) cubic-bezier(.19,1,.22,1) forwards,
+    trigger-stage-out var(--trigger-exit-ms,540ms)
+      var(--trigger-exit-delay-ms,5460ms) ease-in forwards;
+}
+.overlay-trigger-scene::before,.overlay-trigger-scene::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+}
+.overlay-trigger-label{
+  position:absolute;z-index:2;left:50%;top:6.18%;
+  transform:translateX(-50%);max-width:min(78%,720px);
+  padding:.38rem .78rem;border-radius:999px;
+  border:1px solid rgba(215,229,204,.36);
+  background:linear-gradient(120deg,rgba(23,37,40,.88),rgba(12,25,33,.82));
+  box-shadow:0 2px 12px rgba(4,14,21,.24),inset 0 1px 0 rgba(246,244,224,.09);
+  color:#f2efdf;
+  font:710 clamp(11px,1.35vw,18px)/1.32 system-ui,sans-serif;
+  letter-spacing:.095em;text-transform:uppercase;text-align:center;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  text-shadow:0 1px 5px rgba(4,15,22,.62);
+  animation:trigger-caption-in var(--trigger-enter-ms,334ms)
+    cubic-bezier(.19,1,.22,1) both;
+}
+.overlay-trigger-scene[data-effect="pulse"]::before,
+.overlay-trigger-scene[data-effect="pulse"]::after{
+  inset:19.1%;border:2px solid rgba(157,230,198,.58);border-radius:50%;
+  box-shadow:0 0 36px rgba(103,212,181,.14),inset 0 0 16px rgba(113,222,185,.11);
+  animation:trigger-ring var(--trigger-pulse-ms,874ms) cubic-bezier(.2,.7,.16,1) 2 both;
+}
+.overlay-trigger-scene[data-effect="pulse"]::after{
+  inset:30.9%;border-color:rgba(222,207,161,.42);
+  animation-delay:var(--trigger-stagger-ms,206ms);
+}
+.overlay-trigger-scene[data-effect="spotlight"]::before{
+  background:radial-gradient(ellipse at 50% 50%,
+    transparent 0 25%,rgba(7,17,25,.1) 38.2%,
+    rgba(8,17,27,.38) 61.8%,rgba(3,9,16,.57) 100%);
+  animation:trigger-spotlight calc(var(--trigger-pulse-ms,874ms) * 1.618)
+    cubic-bezier(.45,0,.35,1) infinite alternate;
+}
+.overlay-trigger-scene[data-effect="spotlight"]::after{
+  background:radial-gradient(ellipse at 50% 45%,rgba(226,228,196,.055),transparent 61.8%);
+}
+.overlay-trigger-scene[data-effect="glitch"]::before{
+  background:repeating-linear-gradient(0deg,transparent 0 9px,
+    rgba(145,222,204,.085) 10px,transparent 11px);
+  animation:trigger-glitch 238ms steps(2,end) 3 alternate both;
+}
+.overlay-trigger-scene[data-effect="glitch"]::after{
+  inset:19.1% 0;
+  background:linear-gradient(125deg,transparent 30%,
+    rgba(216,144,179,.11) 48%,rgba(165,221,216,.12) 52%,transparent 69%);
+  animation:trigger-sweep var(--trigger-pulse-ms,874ms) cubic-bezier(.19,1,.22,1) 1 both;
+}
+.overlay-trigger-scene[data-effect="paper"]::before,
+.overlay-trigger-scene[data-effect="phosphor"]::before,
+.overlay-trigger-scene[data-effect="holo-foil"]::before,
+.overlay-trigger-scene[data-effect="ink-wash"]::before,
+.overlay-trigger-scene[data-effect="bounce"]::before{
+  background:linear-gradient(112deg,transparent 29%,
+    rgba(225,221,180,.04) 43%,rgba(237,240,217,.115) 49%,
+    rgba(155,210,203,.04) 57%,transparent 71%);
+  animation:trigger-style-sheen var(--trigger-pulse-ms,874ms)
+    cubic-bezier(.19,1,.22,1) 1 both;
+}
+.overlay-trigger-particle{
+  position:absolute;top:-24px;left:var(--particle-x,50%);
+  width:calc(7px * var(--particle-scale,1));
+  height:calc(11px * var(--particle-scale,1));
+  border-radius:1px;
+  background:var(--particle-color,#d7c29e);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.23),0 1px 4px rgba(8,22,30,.15);
+  opacity:0;
+  animation:trigger-confetti var(--particle-duration,1400ms)
+    var(--particle-delay,0ms) cubic-bezier(.42,0,.71,.86)
+    var(--particle-iterations,3) both;
+}
+.overlay-trigger-scene[data-effect="rain"] .overlay-trigger-particle{
+  width:2px;height:clamp(10px,2vw,20px);border-radius:99px;
+  background:linear-gradient(180deg,rgba(171,225,235,0),rgba(156,216,229,.66));
+  box-shadow:none;
+  animation-name:trigger-rain;
+  animation-timing-function:cubic-bezier(.44,0,.7,.86);
+}
+/* The source's chosen materials and existing shadows remain untouched.
+   Temporary emphasis is additive rather than replacing their style packs. */
+#overlay-root[data-trigger-effect="pulse"] > .overlay-chat-message{
+  outline:1px solid rgba(148,230,193,.42);outline-offset:2px;
+}
+#overlay-root[data-trigger-effect="spotlight"] > .overlay-chat-message{filter:brightness(1.07)}
+#overlay-root[data-trigger-effect="glitch"] > .overlay-chat-message{
+  text-shadow:1px 0 rgba(219,132,161,.27),-1px 0 rgba(138,217,223,.34);
+}
+#overlay-root[data-trigger-effect="pulse"] .overlay-wall-visual{
+  filter:drop-shadow(0 0 8px rgba(155,232,200,.43));
+}
+#overlay-root[data-trigger-effect="glitch"] .overlay-wall-visual{
+  filter:drop-shadow(2px 0 rgba(226,142,171,.32));
+}
+@keyframes trigger-stage-in{
+  0%{opacity:0}
+  61.8%{opacity:1}
+  100%{opacity:1}
+}
+@keyframes trigger-stage-out{from{opacity:1}to{opacity:0}}
+@keyframes trigger-caption-in{
+  0%{opacity:0;transform:translate(-50%,-12px) scale(.964);filter:blur(5px)}
+  61.8%{opacity:1;transform:translate(-50%,1px) scale(1.012);filter:blur(0)}
+  100%{opacity:1;transform:translate(-50%,0) scale(1);filter:blur(0)}
+}
+@keyframes trigger-ring{
+  0%{opacity:0;transform:scale(.618)}
+  38.2%{opacity:.5}
+  100%{opacity:0;transform:scale(1.618)}
+}
+@keyframes trigger-spotlight{
+  from{opacity:.61;transform:scale(.975)}
+  to{opacity:.9;transform:scale(1.02)}
+}
+@keyframes trigger-glitch{
+  from{opacity:.18;transform:translateY(-3px)}
+  to{opacity:.46;transform:translateY(4px)}
+}
+@keyframes trigger-sweep{
+  from{opacity:0;transform:translateX(-38.2%)}
+  61.8%{opacity:.74}
+  to{opacity:0;transform:translateX(38.2%)}
+}
+@keyframes trigger-style-sheen{
+  from{opacity:0;transform:translateX(-100%)}
+  38.2%{opacity:.86}
+  to{opacity:0;transform:translateX(100%)}
+}
+@keyframes trigger-confetti{
+  0%{opacity:0;transform:translate3d(0,-24px,0) rotate(0deg)}
+  12%{opacity:.85}
+  61.8%{opacity:.91}
+  100%{opacity:0;transform:translate3d(var(--particle-drift,0px),105vh,0)
+    rotate(var(--particle-rotation,360deg))}
+}
+@keyframes trigger-rain{
+  0%{opacity:0;transform:translate3d(0,-28px,0) rotate(12deg)}
+  12%{opacity:.62}
+  61.8%{opacity:.68}
+  100%{opacity:0;transform:translate3d(var(--particle-drift,8px),106vh,0) rotate(12deg)}
+}
+@media (prefers-reduced-motion:reduce){
+  .overlay-trigger-scene{animation:none!important;opacity:1}
+  .overlay-trigger-scene::before,.overlay-trigger-scene::after,
+  .overlay-trigger-label,.overlay-trigger-particle{animation:none!important}
+  .overlay-trigger-label{opacity:1;transform:translateX(-50%);filter:none}
+  .overlay-trigger-particle{display:none}
+  .overlay-trigger-scene[data-effect="pulse"]::before,
+  .overlay-trigger-scene[data-effect="pulse"]::after{opacity:.17;transform:scale(.92)}
+  .overlay-trigger-scene[data-effect="glitch"]::before,
+  .overlay-trigger-scene[data-effect="glitch"]::after,
+  .overlay-trigger-scene[data-effect="paper"]::before,
+  .overlay-trigger-scene[data-effect="phosphor"]::before,
+  .overlay-trigger-scene[data-effect="holo-foil"]::before,
+  .overlay-trigger-scene[data-effect="ink-wash"]::before,
+  .overlay-trigger-scene[data-effect="bounce"]::before{opacity:0}
+}

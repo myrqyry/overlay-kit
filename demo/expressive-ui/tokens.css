@@ -1,0 +1,111 @@
+/* Synced from myrqyry/neumorphic-ui web contract. Keep app-specific overrides outside this directory. */
+/*
+ * Expressive UI web tokens
+ *
+ * Shared implementation of the visual language described by the
+ * expressive-interface-design skill. These are semantic defaults, not a
+ * mandatory palette. Consumer apps should override role tokens when their
+ * product identity or Colorway palette calls for it.
+ */
+
+:root,
+[data-eui-theme='dark'] {
+  color-scheme: dark;
+
+  --eui-bg: #141b1f;
+  --eui-surface: #192328;
+  --eui-surface-raised: #26343a;
+  --eui-surface-inset: #10191e;
+  --eui-surface-soft: #202a30;
+
+  --eui-line: #36494a;
+  --eui-line-strong: #526c65;
+
+  --eui-text: #dae5df;
+  --eui-muted: #95a9a6;
+  --eui-quiet: #6f8784;
+
+  --eui-accent: #9ec3a9;
+  --eui-accent-strong: #d9efe1;
+  --eui-accent-on: #17211d;
+
+  --eui-success: #8fc5a5;
+  --eui-warning: #d6b26c;
+  --eui-danger: #d78575;
+
+  --eui-font-display: 'Bricolage Grotesque', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --eui-font-ui: 'Bricolage Grotesque', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --eui-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --eui-radius-xs: 6px;
+  --eui-radius-sm: 9px;
+  --eui-radius-md: 12px;
+  --eui-radius-lg: 16px;
+  --eui-radius-xl: 24px;
+  --eui-radius-pill: 999px;
+
+  --eui-space-1: 4px;
+  --eui-space-2: 8px;
+  --eui-space-3: 12px;
+  --eui-space-4: 16px;
+  --eui-space-5: 24px;
+
+  --eui-control-target: 48px;
+  --eui-control-compact: 36px;
+  --eui-slider-rail: 20px;
+  --eui-slider-thumb: 20px;
+
+  --eui-shadow-raised:
+    inset 0 1px 0 rgb(255 255 255 / 8%),
+    0 2px 5px rgb(5 11 13 / 44%);
+  --eui-shadow-soft:
+    inset 0 1px 0 rgb(255 255 255 / 5%),
+    0 8px 24px rgb(7 16 19 / 16%);
+  --eui-shadow-inset:
+    inset 0 2px 5px rgb(7 17 21 / 56%),
+    0 1px 0 rgb(255 255 255 / 5%);
+
+  --eui-duration-fast: 120ms;
+  --eui-duration-normal: 170ms;
+  --eui-duration-gentle: 240ms;
+  --eui-motion-tactile: cubic-bezier(.2, .8, .2, 1);
+  --eui-motion-gentle: cubic-bezier(.22, .61, .36, 1);
+
+  --eui-focus-ring: 2px solid color-mix(in srgb, var(--eui-accent) 78%, white);
+  --eui-focus-offset: 3px;
+}
+
+[data-eui-theme='light'] {
+  color-scheme: light;
+
+  --eui-bg: #e9eef5;
+  --eui-surface: #e5ebf1;
+  --eui-surface-raised: #f0f4f8;
+  --eui-surface-inset: #dbe3eb;
+  --eui-surface-soft: #e2e8ef;
+
+  --eui-line: #b8c5ce;
+  --eui-line-strong: #8ea49d;
+
+  --eui-text: #24312d;
+  --eui-muted: #596c66;
+  --eui-quiet: #71817c;
+
+  --eui-accent: #537765;
+  --eui-accent-strong: #315544;
+  --eui-accent-on: #f3faf6;
+
+  --eui-success: #47735a;
+  --eui-warning: #8d6a2b;
+  --eui-danger: #9b5348;
+
+  --eui-shadow-raised:
+    inset 0 1px 0 rgb(255 255 255 / 80%),
+    0 3px 9px rgb(76 95 108 / 20%);
+  --eui-shadow-soft:
+    inset 0 1px 0 rgb(255 255 255 / 70%),
+    0 10px 28px rgb(75 91 104 / 14%);
+  --eui-shadow-inset:
+    inset 0 2px 6px rgb(116 136 150 / 26%),
+    0 1px 0 rgb(255 255 255 / 70%);
+}

@@ -1,0 +1,27 @@
+{
+  "@bufbuild/protobuf@2.17.0": {
+    "source": "https://github.com/bufbuild/protobuf-es/blob/01a8c3b7c95d17758c641b2b9e8ee2f14a3ee9d7/LICENSE; installed dist/esm/wire/varint.js header",
+    "files": ["protobuf-apache.txt", "protobuf-bsd.txt"],
+    "status": "exact package gitHead plus installed BSD notice"
+  },
+  "tiktok-live-proto@0.2.3": {
+    "source": "https://github.com/isaackogan/TikTok-Webcast-Protobuf/blob/9e34a85c40ed75e4db73bafd47232f82c056c3b3/LICENSE",
+    "files": ["tiktok-live-proto-mit.txt"],
+    "status": "exact package gitHead"
+  },
+  "tiktok-live-api-sdk@0.4.0-beta1": {
+    "source": "https://github.com/EulerStream/Euler-Api-Sdk/blob/e50967fcb5717a18555e4a009bd277f2ec7b2cdc/LICENSE",
+    "files": ["tiktok-live-api-sdk-mit.txt"],
+    "status": "MIT declared in installed manifest; upstream license from current commit; exact npm release commit not established"
+  },
+  "https-proxy-agent@5.0.1": {
+    "source": "https://github.com/TooTallNate/proxy-agents/blob/890a2080267b35f5accfa3ee0edd165f158a3c4d/packages/https-proxy-agent/LICENSE",
+    "files": ["https-proxy-agent-mit.txt"],
+    "status": "MIT declared in installed manifest; package gitHead d0d80cc0482f20495aa8595f802e1a9f3b1b3409 has no license file; upstream current copyright and license reproduced"
+  },
+  "agent-base@6.0.2": {
+    "source": "https://github.com/TooTallNate/proxy-agents/blob/890a2080267b35f5accfa3ee0edd165f158a3c4d/packages/agent-base/LICENSE",
+    "files": ["agent-base-mit.txt"],
+    "status": "MIT declared in installed manifest; package gitHead c4b8ea2e1a11bae023bb09b708050a50418204e9 has no license file; upstream current copyright and license reproduced"
+  }
+}

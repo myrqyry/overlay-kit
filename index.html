@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Overlay Kit — Control Room</title>
+</head>
+<body class="editor-surface">
+  <div class="workbench">
+    <header class="app-chrome">
+      <a class="workbench-brand" href="https://github.com/myrqyry/overlay-kit" target="_blank" rel="noopener noreferrer" aria-label="Overlay Kit by myrqyry — original project" title="Overlay Kit by myrqyry — original project">
+        <span class="brand-glyph" aria-hidden="true">✳</span>
+        <span class="brand-name">overlay<span class="brand-muted">kit</span></span>
+      </a>
+      <div class="live-session" aria-label="Live Chatbus source">
+        <div class="live-source-field" role="group" aria-label="Chat source">
+          <select id="live-platform" hidden tabindex="-1" aria-hidden="true">
+            <option value="twitch">Twitch</option>
+            <option value="kick">Kick</option>
+            <option value="youtube">YouTube</option>
+            <option value="tiktok" disabled>TikTok</option>
+          </select>
+          <button id="live-platform-trigger" class="live-platform-trigger" type="button"
+            aria-label="Chat platform: Twitch" aria-haspopup="menu" aria-expanded="false" aria-controls="live-platform-menu"></button>
+          <div id="live-platform-menu" class="live-platform-menu" role="menu" aria-label="Chat platform" hidden></div>
+          <input id="live-channel" type="text" placeholder="Twitch username" maxlength="200"
+            autocomplete="off" spellcheck="false" aria-label="Twitch username">
+          <button id="live-toggle" class="icon-button live-toggle" type="button"
+            aria-label="Connect" title="Connect" disabled>
+            <span id="live-toggle-icon" data-mingcute="link"></span>
+          </button>
+        </div>
+        <div id="live-sources" class="live-source-chips" aria-label="Connected chat sources"></div>
+        <div id="live-source-menu" class="live-source-menu" role="menu" aria-label="Chat source actions" hidden></div>
+        <span id="live-status" class="sr-only" role="status">Checking live source…</span>
+      </div>
+      <div class="workspace-header">
+      <nav class="workspace-tabs" role="tablist" aria-label="Overlay workspaces">
+        <button id="edit-wall" class="workspace-tab" data-view="wall" type="button" role="tab"
+          aria-selected="true" aria-controls="workspace" aria-describedby="workspace-actions-hint" tabindex="0">
+          <span class="tab-indicator wall-indicator" data-mingcute="emoji" aria-hidden="true"></span>
+          Emote wall
+        </button>
+        <button id="edit-chat" class="workspace-tab" data-view="chat" type="button" role="tab"
+          aria-selected="false" aria-controls="workspace" aria-describedby="workspace-actions-hint" tabindex="-1">
+          <span class="tab-indicator chat-indicator" data-mingcute="chat" aria-hidden="true"></span>
+          Chat overlay
+        </button>
+        <button id="edit-avatars" class="workspace-tab" data-view="avatars" type="button" role="tab"
+          aria-selected="false" aria-controls="workspace" aria-describedby="workspace-actions-hint" tabindex="-1">
+          <span class="tab-indicator avatar-indicator" data-mingcute="group" aria-hidden="true"></span>
+          Avatars
+        </button>
+        <button id="edit-events" class="workspace-tab" data-view="events" type="button" role="tab"
+          aria-selected="false" aria-controls="workspace" aria-describedby="workspace-actions-hint" tabindex="-1">
+          <span class="tab-indicator event-indicator" data-mingcute="sparkles" aria-hidden="true"></span>
+          Events
+        </button>
+      </nav>
+      </div>
+      <div id="workspace-tab-actions" class="workspace-tab-actions" hidden>
+        <div class="workspace-tab-action-group" data-view="wall" role="group" aria-label="Emote wall preview actions" hidden>
+          <label class="preview-enable"><span>Enabled</span><input id="enable-wall" type="checkbox" role="switch" aria-label="Enable Emote wall preview" checked></label>
+          <a id="wall-url" class="source-copy-chip" data-view="wall" href="wall.html" target="_blank" rel="noopener" aria-label="Copy Emote wall browser-source link" title="Copy Emote wall browser-source link (Ctrl-click to open)"><span data-mingcute="copy" aria-hidden="true"></span><span class="copy-label">Copy link</span></a>
+        </div>
+        <div class="workspace-tab-action-group" data-view="chat" role="group" aria-label="Chat preview actions" hidden>
+          <label class="preview-enable"><span>Enabled</span><input id="enable-chat" type="checkbox" role="switch" aria-label="Enable Chat preview" checked></label>
+          <a id="chat-url" class="source-copy-chip" data-view="chat" href="chat.html" target="_blank" rel="noopener" aria-label="Copy Chat browser-source link" title="Copy Chat browser-source link (Ctrl-click to open)"><span data-mingcute="copy" aria-hidden="true"></span><span class="copy-label">Copy link</span></a>
+        </div>
+        <div class="workspace-tab-action-group" data-view="avatars" role="group" aria-label="Avatars preview actions" hidden>
+          <label class="preview-enable"><span>Enabled</span><input id="enable-avatars" type="checkbox" role="switch" aria-label="Enable Avatars preview"></label>
+          <a id="avatars-url" class="source-copy-chip" data-view="avatars" href="avatars.html" target="_blank" rel="noopener" aria-label="Copy Avatars browser-source link" title="Copy Avatars browser-source link (Ctrl-click to open)"><span data-mingcute="copy" aria-hidden="true"></span><span class="copy-label">Copy link</span></a>
+        </div>
+        <div class="workspace-tab-action-group" data-view="events" role="group" aria-label="Events preview actions" hidden>
+          <label class="preview-enable"><span>Enabled</span><input id="enable-events" type="checkbox" role="switch" aria-label="Enable Events preview"></label>
+          <a id="events-url" class="source-copy-chip" data-view="events" href="events.html" target="_blank" rel="noopener" aria-label="Copy Events browser-source link" title="Copy Events browser-source link (Ctrl-click to open)"><span data-mingcute="copy" aria-hidden="true"></span><span class="copy-label">Copy link</span></a>
+        </div>
+      </div>
+      <span id="workspace-actions-hint" class="sr-only">Hover, or press Down arrow, for preview enable and copy link actions.</span>
+      <div class="chrome-tools">
+        <button id="open-presets" class="header-presets" type="button" aria-label="Manage presets for selected overlay" title="Manage presets" aria-haspopup="dialog" aria-controls="presets-dialog"><span data-mingcute="load" aria-hidden="true"></span><span>Presets</span></button>
+        <button id="compare-previews" class="icon-button chrome-icon-button" type="button" aria-pressed="false" aria-label="Compare previews" title="Compare four previews"><span data-mingcute="compare" aria-hidden="true"></span></button>
+        <button id="show-settings" class="mobile-jump icon-button chrome-icon-button" type="button" aria-label="Open settings" title="Open settings"><span data-mingcute="settings" aria-hidden="true"></span></button>
+        <button id="open-accounts" class="icon-button chrome-icon-button" type="button"
+          aria-label="Platform accounts" title="Platform accounts" aria-haspopup="dialog" aria-controls="accounts-dialog">
+          <span data-mingcute="user" aria-hidden="true"></span>
+        </button>
+        <button id="import-all-settings" class="icon-button chrome-icon-button" type="button"
+          aria-label="Import all user settings" title="Import all user settings">
+          <span data-mingcute="import"></span>
+        </button>
+        <button id="export-all-settings" class="icon-button chrome-icon-button" type="button"
+          aria-label="Export all user settings" title="Export all user settings">
+          <span data-mingcute="export"></span>
+        </button>
+        <input id="import-all-file" type="file" accept="application/json,.json" hidden>
+        <div class="chrome-status"><span class="status-led" aria-hidden="true"></span> Local editor <span class="chrome-version">v0.1</span></div>
+      </div>
+    </header>
+
+    <div class="studio" id="studio" data-mobile-panel="preview">
+      <aside class="panel" id="overlay-inspector" aria-label="Overlay settings inspector">
+        <div class="option-tools">
+          <button type="button" class="mobile-jump back-to-preview" id="show-preview">↑ Preview</button>
+          <div class="inspector-search">
+            <span class="inspector-search-icon" data-mingcute="search" aria-hidden="true"></span>
+            <input id="search-options" type="search" placeholder="Search settings..." aria-label="Search settings">
+          </div>
+        </div>
+        <div id="options-root" class="option-groups" aria-label="Overlay configuration"></div>
+
+        <div class="inspector-footer">
+          <span class="section-kicker">PREVIEW EVENTS</span>
+          <div class="event-actions">
+            <button id="send-sample" type="button" class="primary">Send emote + message <span aria-hidden="true">↗</span></button>
+            <button id="send-burst" type="button">Send sample burst</button>
+          </div>
+          <div class="sample-asset-library" aria-label="Preview cosmetic asset cache">
+            <span id="sample-asset-status" role="status">Loading preview cosmetics…</span>
+            <button id="clear-sample-assets" type="button" disabled title="Clear locally cached cosmetic asset URLs and styles. Chat messages and usernames are not saved; some public avatar URLs may identify an account.">Clear cached art</button>
+          </div>
+          <p id="status" class="status" role="status">Sample buttons send synthetic events. Live Chatbus status appears above.</p>
+          <div id="project-attribution" class="project-attribution">
+            <a href="https://github.com/myrqyry/overlay-kit" target="_blank" rel="noopener noreferrer">© 2026 myrqyry</a>
+            <span aria-hidden="true">·</span>
+            <a href="/license.txt" target="_blank" rel="noopener">ELv2</a>
+            <span aria-hidden="true">·</span>
+            <a href="/notice.txt" target="_blank" rel="noopener">Credits</a>
+            <span aria-hidden="true">·</span>
+            <a href="/third-party-notices.txt" target="_blank" rel="noopener">Third-party notices</a>
+          </div>
+        </div>
+      </aside>
+
+      <main class="preview-space" id="workspace" role="tabpanel" aria-labelledby="edit-wall">
+        <div class="preview-grid" id="preview-grid" data-focus="wall" data-compare="false">
+          <section class="preview-card" data-view="wall" data-enabled="true" data-active="true" aria-label="Emote wall preview">
+            <span class="preview-card-label">Emote wall</span>
+            <div class="preview-viewport"><iframe id="wall-preview" title="Emote wall preview" src="about:blank"></iframe><div class="preview-disabled" hidden>Emote wall preview is disabled. Enable it from its workspace tab.</div></div>
+          </section>
+          <section class="preview-card" data-view="chat" data-enabled="true" data-active="false" aria-label="Chat overlay preview">
+            <span class="preview-card-label">Chat overlay</span>
+            <div class="preview-viewport"><iframe id="chat-preview" title="Chat overlay preview" src="about:blank"></iframe><div class="preview-disabled" hidden>Chat preview is disabled. Enable it from its workspace tab.</div></div>
+          </section>
+          <section class="preview-card" data-view="avatars" data-enabled="false" data-active="false" aria-label="Avatar world preview">
+            <span class="preview-card-label">Avatar world</span>
+            <div class="preview-viewport"><iframe id="avatars-preview" title="Avatar world preview" src="about:blank" hidden></iframe><div class="preview-disabled">Avatars preview is disabled. Enable it from its workspace tab.</div></div>
+          </section>
+          <section class="preview-card" data-view="events" data-enabled="false" data-active="false" aria-label="Events preview">
+            <span class="preview-card-label">Events</span>
+            <div class="preview-viewport"><iframe id="events-preview" title="Events preview" src="about:blank" hidden></iframe><div class="preview-disabled">Events preview is disabled. Enable it from its workspace tab.</div></div>
+          </section>
+          <div id="preview-empty" class="preview-disabled" hidden>No previews enabled. Use the switches on the workspace tabs.</div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+  <dialog id="presets-dialog" aria-labelledby="presets-title" class="editor-dialog">
+    <div class="accounts-heading">
+      <h2 id="presets-title">Overlay presets</h2>
+      <form method="dialog"><button type="submit" aria-label="Close presets">Close</button></form>
+    </div>
+    <p class="accounts-notice">Load, save or reset settings for this overlay only.</p>
+    <section class="preset-tools" aria-label="Overlay presets">
+      <label for="preset-select">Load preset</label>
+      <div class="preset-dialog-row">
+        <select id="preset-select" aria-label="Preset to load"></select>
+        <button id="load-preset" type="button" aria-label="Load preset"><span data-mingcute="load" aria-hidden="true"></span>Load</button>
+      </div>
+      <label for="preset-name">Save current settings as</label>
+      <div class="preset-dialog-row">
+        <input id="preset-name" maxlength="40" placeholder="Preset name" aria-label="Preset name">
+        <button id="save-preset" type="button" aria-label="Save preset"><span data-mingcute="save" aria-hidden="true"></span>Save</button>
+      </div>
+      <div class="preset-secondary-actions">
+        <button id="delete-preset" type="button" aria-label="Delete preset"><span data-mingcute="delete" aria-hidden="true"></span>Delete saved preset</button>
+        <button id="reset-defaults" type="button" aria-label="Reset selected overlay"><span data-mingcute="reset" aria-hidden="true"></span>Reset defaults</button>
+      </div>
+      <div id="preset-reset-confirm" hidden>
+        <p id="preset-reset-warning">Replace current edits with defaults? Named presets are kept.</p>
+        <div class="preset-secondary-actions">
+          <button id="cancel-reset" type="button">Cancel</button>
+          <button id="confirm-reset" type="button">Reset to defaults</button>
+        </div>
+      </div>
+    </section>
+    <p id="preset-feedback" role="status"></p>
+  </dialog>
+  <dialog id="source-link-dialog" aria-labelledby="source-link-title" class="editor-dialog">
+    <div class="accounts-heading">
+      <h2 id="source-link-title">Copy browser-source link</h2>
+      <form method="dialog"><button type="submit">Close</button></form>
+    </div>
+    <p class="accounts-notice">Clipboard access is unavailable. Select and copy this URL manually.</p>
+    <input id="manual-source-link" aria-label="Browser-source URL" readonly>
+  </dialog>
+  <span id="source-copy-feedback" class="sr-only" role="status"></span>
+  <dialog id="accounts-dialog" aria-labelledby="accounts-title">
+    <div class="accounts-heading">
+      <h2 id="accounts-title">Platform accounts</h2>
+      <form method="dialog"><button type="submit" aria-label="Close accounts">Close</button></form>
+    </div>
+    <p id="accounts-notice" class="accounts-notice" role="status"></p>
+    <div id="accounts-list"></div>
+    <p id="accounts-feedback" role="status"></p>
+  </dialog>
+  <script type="module" src="/demo/studio.ts"></script>
+</body>
+</html>

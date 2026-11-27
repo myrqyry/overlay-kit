@@ -1,0 +1,25 @@
+node_modules/
+dist/
+dist-demo/
+coverage/
+*.log
+
+.live-channel.json
+
+# meristem:local-ignore:start
+.meristem/local/
+# meristem:local-ignore:end
+
+.oauth-accounts.json
+
+# Optional artwork supplied by the individual user; never commit.
+/demo/local-art/
+
+# Local credentials and dotenv overrides must never enter release history.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx

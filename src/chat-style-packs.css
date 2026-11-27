@@ -1,0 +1,69 @@
+/*
+ * Built-in visual packs. Renderers, message DOM, lifespan and moderation are
+ * identical regardless of style. No runtime CSS strings or remote scripts.
+ * Keep decoration entirely scoped to the selected chat root.
+ */
+[data-chat-style="paper"] > .overlay-chat-message {
+  --overlay-paper-ink: #473b3b;
+  position: relative;
+  color: var(--overlay-paper-ink);
+  border: 1px solid rgba(114, 93, 81, var(--chat-bg-alpha, .72));
+  border-radius: 7px 13px 9px 11px !important;
+  box-shadow: 1px 2px 0 rgba(72, 55, 48, calc(var(--chat-bg-alpha, .72) * .28)), 3px 4px 8px rgba(22, 16, 14, calc(var(--chat-bg-alpha, .72) * .17)) !important;
+}
+[data-chat-style="paper"] > .overlay-chat-message[data-message-background="theme"] {
+  background-color: rgba(247, 238, 218, var(--chat-bg-alpha, .72)) !important;
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0px, transparent 22px,
+      rgba(167, 135, 116, calc(var(--chat-bg-alpha, .72) * .12)) 23px, transparent 24px),
+    linear-gradient(114deg, rgba(249, 247, 234, calc(var(--chat-bg-alpha, .72) * .62)), rgba(213, 191, 167, calc(var(--chat-bg-alpha, .72) * .25))) !important;
+}
+[data-chat-style="paper"] > .overlay-chat-message[data-message-background="theme"]::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: 1px dashed rgba(92, 71, 65, .30);
+  border-radius: inherit;
+  opacity: var(--chat-bg-alpha, .72);
+  pointer-events: none;
+}
+[data-chat-style="paper"] .overlay-chat-message [data-username] {
+  text-decoration: underline;
+  text-decoration-style: wavy;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+[data-chat-style="paper"] .overlay-chat-message time {
+  color: #6e6060;
+  opacity: .85;
+}
+[data-chat-style="phosphor"] > .overlay-chat-message {
+  position: relative;
+  color: #d6f1b5;
+  border: 1px solid rgba(147, 205, 133, var(--chat-bg-alpha, .72));
+  border-left: 3px solid rgba(184, 220, 154, calc(var(--chat-bg-alpha, .72) * 1.22));
+  border-radius: 3px 9px 9px 3px !important;
+  box-shadow: inset 0 0 12px rgba(102, 160, 86, calc(var(--chat-bg-alpha, .72) * .14)),
+    0 2px 12px rgba(3, 13, 7, calc(var(--chat-bg-alpha, .72) * .31)) !important;
+}
+[data-chat-style="phosphor"] > .overlay-chat-message[data-message-background="theme"] {
+  background-color: rgba(10, 24, 19, var(--chat-bg-alpha, .72)) !important;
+  background-image: linear-gradient(140deg, rgba(48, 83, 53, calc(var(--chat-bg-alpha, .72) * .33)), rgba(6, 19, 13, calc(var(--chat-bg-alpha, .72) * .39))) !important;
+}
+[data-chat-style="phosphor"] > .overlay-chat-message[data-message-background="theme"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(to bottom, transparent 0px, transparent 3px,
+    rgba(111, 154, 94, .055) 4px, transparent 5px);
+  border-radius: inherit;
+  opacity: var(--chat-bg-alpha, .72);
+  pointer-events: none;
+}
+[data-chat-style="phosphor"] .overlay-chat-message [data-username] {
+  text-shadow: 0 0 8px rgba(156, 238, 119, .32);
+}
+[data-chat-style="phosphor"] .overlay-chat-message time {
+  color: #b2c994;
+  opacity: .8;
+}

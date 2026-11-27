@@ -1,0 +1,63 @@
+/*
+ * FFZ modifier flags (see https://api.frankerfacez.com/).
+ * The wrappers are deliberately nested: wall materials filter the outer
+ * .overlay-emote, while flip, motion, and color effects compose independently.
+ */
+.overlay-emote [data-ffz-effect="grow-x"] {
+  transform: scaleX(2);
+  transform-origin: left center;
+}
+.overlay-emote [data-ffz-effect="flip"][data-flip="x"] { transform: scaleX(-1); }
+.overlay-emote [data-ffz-effect="flip"][data-flip="y"] { transform: scaleY(-1); }
+.overlay-emote [data-ffz-effect="flip"][data-flip="xy"] { transform: scale(-1, -1); }
+.overlay-emote [data-ffz-effect="hyper-red"] {
+  filter: sepia(1) saturate(6) hue-rotate(-35deg) contrast(1.8);
+}
+.overlay-emote [data-ffz-effect="cursed"] {
+  filter: grayscale(1) contrast(2.35) brightness(.78);
+}
+.overlay-emote [data-ffz-effect="rainbow"] {
+  animation: overlay-ffz-rainbow 2.2s linear infinite;
+}
+.overlay-emote [data-ffz-effect="hyper-shake"] {
+  animation: overlay-ffz-shake 110ms linear infinite;
+}
+.overlay-emote [data-ffz-effect="jam"] {
+  animation: overlay-ffz-jam 520ms ease-in-out infinite;
+  transform-origin: 50% 90%;
+}
+.overlay-emote [data-ffz-effect="bounce"] {
+  animation: overlay-ffz-bounce 640ms ease-in-out infinite;
+  transform-origin: 50% 95%;
+}
+@keyframes overlay-ffz-rainbow {
+  from { filter: hue-rotate(0deg); }
+  to { filter: hue-rotate(360deg); }
+}
+@keyframes overlay-ffz-shake {
+  0%, 100% { transform: translate(-1px, 0) rotate(-2deg); }
+  25% { transform: translate(1px, 1px) rotate(2deg); }
+  50% { transform: translate(-1px, -1px) rotate(1deg); }
+  75% { transform: translate(1px, -1px) rotate(-2deg); }
+}
+@keyframes overlay-ffz-jam {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  22% { transform: rotate(-12deg) translateY(2px); }
+  48% { transform: rotate(10deg) translateY(-2px); }
+  76% { transform: rotate(-8deg) translateY(2px); }
+}
+@keyframes overlay-ffz-bounce {
+  0%, 100% { transform: scale(1, 1); }
+  20% { transform: scale(1.12, .65); }
+  40%, 60% { transform: scaleX(-1); }
+  70% { transform: scale(-1.12, .65); }
+  90% { transform: scale(1, 1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .overlay-emote [data-ffz-effect="rainbow"],
+  .overlay-emote [data-ffz-effect="hyper-shake"],
+  .overlay-emote [data-ffz-effect="jam"],
+  .overlay-emote [data-ffz-effect="bounce"] {
+    animation: none !important;
+  }
+}

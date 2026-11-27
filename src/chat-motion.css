@@ -1,0 +1,571 @@
+/* Phi-guided soft timing preserves every selected entrance, letter effect,
+   duration and disabled/reduced-motion contract. No layout animation. */
+.overlay-chat-message {
+  --chat-enter-ease: cubic-bezier(.18,.79,.22,1);
+  --chat-exit-ease: cubic-bezier(.42,0,.82,.48);
+  --chat-letter-ease: cubic-bezier(.19,.78,.25,1);
+}
+/* Reusable chat row motion: no height, width, padding or position animation.
+   Flow still reflows once when a row is inserted or finally removed. */
+.overlay-chat-message[data-enter="none"]:not([data-phase="exiting"]) { animation: none; }
+.overlay-chat-message[data-enter="rise"]:not([data-phase="exiting"]) {
+  animation: chat-in-rise var(--chat-enter-duration,320ms) ease-out both;
+}
+.overlay-chat-message[data-enter="slide"]:not([data-phase="exiting"]) {
+  animation: chat-in-left var(--chat-enter-duration,320ms) cubic-bezier(.2,.8,.2,1) both;
+}
+.overlay-chat-message[data-enter="slide-right"]:not([data-phase="exiting"]) {
+  animation: chat-in-right var(--chat-enter-duration,320ms) cubic-bezier(.2,.8,.2,1) both;
+}
+.overlay-chat-message[data-enter="drop"]:not([data-phase="exiting"]) {
+  animation: chat-in-drop var(--chat-enter-duration,320ms) cubic-bezier(.2,.85,.23,1) both;
+}
+.overlay-chat-message[data-enter="scale"]:not([data-phase="exiting"]) {
+  animation: chat-in-scale var(--chat-enter-duration,320ms) cubic-bezier(.2,.85,.2,1) both;
+}
+.overlay-chat-message[data-enter="pop"]:not([data-phase="exiting"]) {
+  animation: chat-in-pop var(--chat-enter-duration,320ms) cubic-bezier(.2,.85,.18,1) both;
+}
+.overlay-chat-message[data-enter="flip"]:not([data-phase="exiting"]) {
+  animation: chat-in-flip var(--chat-enter-duration,320ms) ease-out both;
+}
+.overlay-chat-message[data-enter="drift"]:not([data-phase="exiting"]) {
+  animation: chat-in-drift var(--chat-enter-duration,320ms) ease-out both;
+}
+/* New arrivals animate only opacity and transforms: no row width/height change. */
+.overlay-chat-message[data-enter="unfurl"]:not([data-phase="exiting"]) {
+  transform-origin: 8% 50%;
+  animation: chat-in-unfurl var(--chat-enter-duration,320ms) cubic-bezier(.2,.8,.16,1) both;
+}
+.overlay-chat-message[data-enter="soft-land"]:not([data-phase="exiting"]) {
+  animation: chat-in-soft-land var(--chat-enter-duration,320ms) cubic-bezier(.2,.85,.2,1) both;
+}
+ .overlay-chat-message[data-enter="wave"]:not([data-phase="exiting"]) {
+  animation: chat-in-wave var(--chat-enter-duration,320ms) ease-out both;
+}
+.overlay-chat-message[data-enter="twist"]:not([data-phase="exiting"]) {
+  animation: chat-in-twist var(--chat-enter-duration,320ms) cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes chat-in-wave {
+  0% {opacity:0;transform:translate3d(0,15px,0) rotate(-1.5deg)}
+  65% {opacity:1;transform:translate3d(0,-3px,0) rotate(.4deg)}
+  100% {opacity:1;transform:none}
+}
+@keyframes chat-in-twist {
+  from {opacity:0;transform:scale(.9) rotate(-5deg)}
+  to {opacity:1;transform:none}
+}
+@keyframes chat-in-unfurl {
+  from {opacity:0;transform:perspective(560px) rotateY(-28deg) scaleX(.88) translate3d(-12px,0,0)}
+  to {opacity:1;transform:perspective(560px) rotateY(0) scaleX(1) translate3d(0,0,0)}
+}
+@keyframes chat-in-soft-land {
+  0% {opacity:0;transform:translate3d(0,-16px,0) rotate(1deg) scale(.97)}
+  61.8% {opacity:1;transform:translate3d(0,2px,0) rotate(-.3deg) scale(1.008)}
+  100% {opacity:1;transform:none}
+}
+@keyframes chat-in-rise {
+  0% {opacity:0;transform:translate3d(0,18px,0)}
+  38.2% {opacity:.8;transform:translate3d(0,5px,0)}
+  61.8% {opacity:1;transform:translate3d(0,-1px,0)}
+  100% {opacity:1;transform:none}
+}
+@keyframes chat-in-left {
+  0% {opacity:0;transform:translate3d(-36px,0,0)}
+  61.8% {opacity:1;transform:translate3d(2px,0,0)}
+  100% {opacity:1;transform:none}
+}
+@keyframes chat-in-right {
+  0% {opacity:0;transform:translate3d(36px,0,0)}
+  61.8% {opacity:1;transform:translate3d(-2px,0,0)}
+  100% {opacity:1;transform:none}
+}
+@keyframes chat-in-drop { from {opacity:0;transform:translate3d(0,-32px,0)} to {opacity:1;transform:translate3d(0,0,0)} }
+@keyframes chat-in-scale { from {opacity:0;transform:scale(.82)} to {opacity:1;transform:scale(1)} }
+@keyframes chat-in-pop {
+  0% {opacity:0;transform:scale(.75)}
+  61.8% {opacity:1;transform:scale(1.045)}
+  100% {opacity:1;transform:scale(1)}
+}
+@keyframes chat-in-flip { from {opacity:0;transform:perspective(700px) rotateX(-65deg)} to {opacity:1;transform:perspective(700px) rotateX(0)} }
+@keyframes chat-in-drift { from {opacity:0;transform:translate3d(-20px,16px,0) rotate(-3deg)} to {opacity:1;transform:translate3d(0,0,0) rotate(0)} }
+
+/* Expiry only. The row still occupies its original flex slot until completion. */
+.overlay-chat-message[data-phase="exiting"][data-exit="fade"] {
+  animation: chat-out-fade var(--chat-exit-duration,260ms) ease-in both;
+}
+.overlay-chat-message[data-phase="exiting"][data-exit="slide-left"] {
+  animation: chat-out-slide-left var(--chat-exit-duration,260ms) ease-in both;
+}
+.overlay-chat-message[data-phase="exiting"][data-exit="slide-right"] {
+  animation: chat-out-slide-right var(--chat-exit-duration,260ms) ease-in both;
+}
+.overlay-chat-message[data-phase="exiting"][data-exit="sink"] {
+  animation: chat-out-sink var(--chat-exit-duration,260ms) ease-in both;
+}
+.overlay-chat-message[data-phase="exiting"][data-exit="shrink"] {
+  animation: chat-out-shrink var(--chat-exit-duration,260ms) ease-in both;
+}
+.overlay-chat-message[data-phase="exiting"][data-exit="flip"] {
+  animation: chat-out-flip var(--chat-exit-duration,260ms) ease-in both;
+}
+/* Expiry only: hold each message's flex slot until its transition finishes. */
+.overlay-chat-message[data-phase="exiting"][data-exit="float-away"] {
+  animation: chat-out-float-away var(--chat-exit-duration,260ms) ease-in both;
+}
+.overlay-chat-message[data-phase="exiting"][data-exit="tuck"] {
+  transform-origin: 12% 50%;
+  animation: chat-out-tuck var(--chat-exit-duration,260ms) ease-in both;
+}
+@keyframes chat-out-float-away {
+  0% {opacity:1;transform:none}
+  38.2% {opacity:.92;transform:translate3d(4px,-9px,0) scale(1.01)}
+  100% {opacity:0;transform:translate3d(12px,-28px,0) scale(1.035)}
+}
+@keyframes chat-out-tuck {from {opacity:1;transform:none} to {opacity:0;transform:perspective(520px) rotateY(35deg) scale(.87)}}
+@keyframes chat-out-wave {0% {opacity:1;transform:none} 45% {opacity:1;transform:translateY(4px) rotate(-.5deg)} 100% {opacity:0;transform:translateY(-16px) rotate(1.5deg)}}
+@keyframes chat-out-twist {from {opacity:1;transform:none} to {opacity:0;transform:scale(.85) rotate(7deg)}}
+@keyframes chat-out-spring {0% {opacity:1;transform:none} 30% {transform:translateY(-5px) scale(1.025)} 100% {opacity:0;transform:translateY(24px) scale(.82)}}
+@keyframes chat-out-fade {
+  0% {opacity:1;transform:translate3d(0,0,0)}
+  38.2% {opacity:.94;transform:translate3d(0,0,0)}
+  100% {opacity:0;transform:translate3d(0,0,0)}
+}
+@keyframes chat-out-slide-left { from {opacity:1;transform:translate3d(0,0,0)} to {opacity:0;transform:translate3d(-36px,0,0)} }
+@keyframes chat-out-slide-right { from {opacity:1;transform:translate3d(0,0,0)} to {opacity:0;transform:translate3d(36px,0,0)} }
+@keyframes chat-out-sink { from {opacity:1;transform:translate3d(0,0,0)} to {opacity:0;transform:translate3d(0,22px,0)} }
+@keyframes chat-out-shrink { from {opacity:1;transform:scale(1)} to {opacity:0;transform:scale(.76)} }
+@keyframes chat-out-flip { from {opacity:1;transform:perspective(700px) rotateX(0)} to {opacity:0;transform:perspective(700px) rotateX(65deg)} }
+@media (prefers-reduced-motion: reduce) {
+  .overlay-chat-message { animation: none !important; }
+}
+
+/* Per-grapheme motion only for text. Word shells preserve normal wrapping;
+   emoji/emote/image nodes are not split. Existing bubble geometry is stable. */
+.overlay-letter-word { display: inline-block; white-space: nowrap; }
+.overlay-letter-word-long { display: inline; white-space: normal; overflow-wrap: anywhere; }
+.overlay-letter { display: inline-block; white-space: pre; }
+/* A real grapheme always owns the width/selection semantics. The overlaid
+   glyph is generated content: no extra text nodes, no width changes. */
+.overlay-letter[data-scrambling] { position: relative; }
+.overlay-letter[data-scrambling] .overlay-letter-real { opacity: 0; }
+.overlay-letter[data-scrambling]::after {
+  content: attr(data-scramble);
+  position: absolute;
+  inset: 0;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  white-space: pre;
+  pointer-events: none;
+}
+
+/* Letter entrances animate only descendants. The message's own entrance
+   must keep running on the row so its bubble, badges and painted outline
+   move together while glyphs animate inside it. */
+.overlay-chat-message:not([data-phase="exiting"])[data-letter-enter="fade"] .overlay-letter {
+  animation: chat-letter-in-fade var(--chat-letter-enter-duration,var(--chat-enter-duration,320ms)) ease-out both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+.overlay-chat-message:not([data-phase="exiting"])[data-letter-enter="rise"] .overlay-letter {
+  animation: chat-letter-in-rise var(--chat-letter-enter-duration,var(--chat-enter-duration,320ms)) ease-out both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+.overlay-chat-message:not([data-phase="exiting"])[data-letter-enter="pop"] .overlay-letter {
+  animation: chat-letter-in-pop var(--chat-letter-enter-duration,var(--chat-enter-duration,320ms)) cubic-bezier(.2,.8,.2,1) both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+ .overlay-chat-message:not([data-phase="exiting"])[data-letter-enter="slide"] .overlay-letter {
+  animation: chat-letter-in-slide var(--chat-letter-enter-duration,var(--chat-enter-duration,320ms)) cubic-bezier(.2,.8,.2,1) both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+ .overlay-chat-message:not([data-phase="exiting"])[data-letter-enter="drop"] .overlay-letter {
+  animation: chat-letter-in-drop var(--chat-letter-enter-duration,var(--chat-enter-duration,320ms)) cubic-bezier(.2,.8,.2,1) both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+ .overlay-chat-message:not([data-phase="exiting"])[data-letter-enter="flip"] .overlay-letter {
+  animation: chat-letter-in-flip var(--chat-letter-enter-duration,var(--chat-enter-duration,320ms)) ease-out both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+ .overlay-chat-message:not([data-phase="exiting"])[data-letter-enter="twist"] .overlay-letter {
+  animation: chat-letter-in-twist var(--chat-letter-enter-duration,var(--chat-enter-duration,320ms)) cubic-bezier(.2,.8,.2,1) both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+ .overlay-chat-message:not([data-phase="exiting"])[data-letter-enter="wave"] .overlay-letter {
+  animation: chat-letter-in-wave var(--chat-letter-enter-duration,var(--chat-enter-duration,320ms)) ease-out both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+ .overlay-chat-message:not([data-phase="exiting"])[data-letter-enter="spring"] .overlay-letter {
+  animation: chat-letter-in-spring var(--chat-letter-enter-duration,var(--chat-enter-duration,320ms)) cubic-bezier(.2,.8,.2,1) both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+ .overlay-chat-message:not([data-phase="exiting"])[data-letter-enter="drift"] .overlay-letter {
+  animation: chat-letter-in-drift var(--chat-letter-enter-duration,var(--chat-enter-duration,320ms)) cubic-bezier(.2,.8,.2,1) both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+ .overlay-chat-message:not([data-phase="exiting"])[data-letter-enter="soft-land"] .overlay-letter {
+  animation: chat-letter-in-soft-land var(--chat-letter-enter-duration,var(--chat-enter-duration,320ms)) cubic-bezier(.2,.8,.2,1) both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+.overlay-chat-message[data-phase="exiting"][data-exit="wave"] {animation:chat-out-wave var(--chat-exit-duration,260ms) ease-in both;}
+.overlay-chat-message[data-phase="exiting"][data-exit="twist"] {animation:chat-out-twist var(--chat-exit-duration,260ms) ease-in both;}
+.overlay-chat-message[data-phase="exiting"][data-exit="spring"] {animation:chat-out-spring var(--chat-exit-duration,260ms) ease-in both;}
+.overlay-chat-message[data-phase="exiting"][data-letter-exit]:not([data-letter-exit="none"]) {
+  animation: none;
+}
+.overlay-chat-message[data-phase="exiting"][data-letter-exit="fade"] .overlay-letter {
+  animation: chat-letter-out-fade var(--chat-exit-duration,260ms) ease-in both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+.overlay-chat-message[data-phase="exiting"][data-letter-exit="sink"] .overlay-letter {
+  animation: chat-letter-out-sink var(--chat-exit-duration,260ms) ease-in both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+.overlay-chat-message[data-phase="exiting"][data-letter-exit="scatter"] .overlay-letter {
+  animation: chat-letter-out-scatter var(--chat-exit-duration,260ms) ease-in both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+.overlay-chat-message[data-phase="exiting"][data-letter-exit="slide"] .overlay-letter {
+  animation:chat-letter-out-slide var(--chat-exit-duration,260ms) ease-in both;
+  animation-delay:calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+.overlay-chat-message[data-phase="exiting"][data-letter-exit="flip"] .overlay-letter {
+  animation:chat-letter-out-flip var(--chat-exit-duration,260ms) ease-in both;
+  animation-delay:calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+.overlay-chat-message[data-phase="exiting"][data-letter-exit="shrink"] .overlay-letter {
+  animation:chat-letter-out-shrink var(--chat-exit-duration,260ms) ease-in both;
+  animation-delay:calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+.overlay-chat-message[data-phase="exiting"][data-letter-exit="twist"] .overlay-letter {
+  animation:chat-letter-out-twist var(--chat-exit-duration,260ms) ease-in both;
+  animation-delay:calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+@keyframes chat-letter-in-fade { from {opacity:0} to {opacity:1} }
+@keyframes chat-letter-in-rise {
+  0% {transform:translateY(12px)}
+  61.8% {transform:translateY(-1px)}
+  100% {transform:none}
+}
+@keyframes chat-letter-in-pop { from {transform:scale(.48)} to {transform:scale(1)} }
+@keyframes chat-letter-in-slide { from {transform:translateX(-20px)} to {transform:translateX(0)} }
+@keyframes chat-letter-in-drop { from {transform:translateY(-24px) scaleY(1.22)} to {transform:translateY(0) scaleY(1)} }
+@keyframes chat-letter-in-flip { from {transform:perspective(240px) rotateX(-92deg)} to {transform:perspective(240px) rotateX(0)} }
+@keyframes chat-letter-in-twist { from {transform:scale(.62) rotate(-42deg)} to {transform:scale(1) rotate(0)} }
+@keyframes chat-letter-in-wave { 0% {transform:translateY(16px) rotate(-10deg)} 65% {transform:translateY(-5px) rotate(4deg)} 100% {transform:translateY(0) rotate(0)} }
+@keyframes chat-letter-in-spring {
+  0% {transform:translateY(12px) scale(.74)}
+  61.8% {transform:translateY(-3px) scale(1.055)}
+  100% {transform:none}
+}
+@keyframes chat-letter-in-drift {
+  from {transform:translate(-12px,10px) rotate(-8deg)}
+  to {transform:none}
+}
+@keyframes chat-letter-in-soft-land {
+  0% {transform:translateY(-12px) rotate(2deg)}
+  61.8% {transform:translateY(2px) rotate(-.6deg)}
+  100% {transform:none}
+}
+@keyframes chat-letter-out-slide {from {opacity:1;transform:none} to {opacity:0;transform:translateX(14px)}}
+@keyframes chat-letter-out-flip {from {opacity:1;transform:none} to {opacity:0;transform:perspective(240px) rotateX(80deg)}}
+@keyframes chat-letter-out-shrink {from {opacity:1;transform:none} to {opacity:0;transform:scale(.25)}}
+@keyframes chat-letter-out-twist {from {opacity:1;transform:none} to {opacity:0;transform:rotate(35deg) scale(.5)}}
+@keyframes chat-letter-out-fade {
+  0% {opacity:1}
+  38.2% {opacity:.94}
+  100% {opacity:0}
+}
+@keyframes chat-letter-out-sink { from {opacity:1;transform:translateY(0)} to {opacity:0;transform:translateY(12px)} }
+@keyframes chat-letter-out-scatter { from {opacity:1;transform:translate(0,0) rotate(0)} to {opacity:0;transform:translate(8px,-14px) rotate(14deg)} }
+@media (prefers-reduced-motion: reduce) {
+  .overlay-letter { animation: none !important; }
+}
+
+/* Text Animations specimen adaptations: finite entrance effects only. Kept
+   inside chat's existing grapheme/timing/expiry lifecycle; emotes are untouched.
+   Original specimen gallery: https://codepen.io/web-strategist/pen/dPNmvGo */
+/* Typewriter is a progressive DOM reveal, not opacity animation: pending
+   glyphs AND spaces have display:none, so they reserve no bubble width.
+   startLetterTypewriter reveals them at the selected cadence. */
+.overlay-chat-message[data-letter-enter="typewriter"] .overlay-letter {
+  animation: none;
+}
+.overlay-chat-message[data-letter-enter="typewriter"] .overlay-typewriter-space {
+  white-space: pre;
+}
+/* One zero-width caret follows the actual CSS-typed glyph index. It never
+   participates in word width, selection, or message text content. */
+.overlay-chat-message[data-letter-enter="typewriter"] .overlay-letter-word { position: relative; }
+.overlay-typewriter-caret {
+  position: absolute;
+  display: inline-block;
+  box-sizing: border-box;
+  width: 0;
+  height: 1em;
+  border-left: 2px solid currentColor;
+  pointer-events: none;
+  user-select: none;
+  vertical-align: -.12em;
+  animation: chat-typewriter-caret-blink 700ms steps(1,end) infinite;
+}
+@keyframes chat-typewriter-caret-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .overlay-typewriter-caret { animation: none !important; display: none !important; }
+}
+.overlay-chat-message:not([data-phase="exiting"])[data-letter-enter="split-flap"] .overlay-letter {
+  transform-origin: 50% 100%;
+  animation: chat-letter-in-split-flap var(--chat-letter-enter-duration,320ms) cubic-bezier(.2,.8,.2,1) both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+.overlay-chat-message:not([data-phase="exiting"])[data-letter-enter="stagger-fade"] .overlay-letter {
+  animation: chat-letter-in-stagger-fade var(--chat-letter-enter-duration,320ms) ease-out both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+.overlay-chat-message:not([data-phase="exiting"])[data-letter-enter="blur-focus"] .overlay-letter {
+  animation: chat-letter-in-blur-focus var(--chat-letter-enter-duration,320ms) ease-out both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+.overlay-chat-message:not([data-phase="exiting"])[data-letter-enter="curtain-wipe"] .overlay-letter {
+  animation: chat-letter-in-curtain-wipe var(--chat-letter-enter-duration,320ms) cubic-bezier(.6,0,.15,1) both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+.overlay-chat-message:not([data-phase="exiting"])[data-letter-enter="glitch-split"] .overlay-letter {
+  animation: chat-letter-in-glitch-split var(--chat-letter-enter-duration,320ms) steps(6,end) both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+.overlay-chat-message:not([data-phase="exiting"])[data-letter-enter="dissolve"] .overlay-letter {
+  animation: chat-letter-in-dissolve var(--chat-letter-enter-duration,320ms) ease-out both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+.overlay-chat-message:not([data-phase="exiting"])[data-letter-enter="fold-collapse"] .overlay-letter {
+  transform-origin: 50% 0;
+  animation: chat-letter-in-fold-collapse var(--chat-letter-enter-duration,320ms) cubic-bezier(.2,.8,.2,1) both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+.overlay-chat-message:not([data-phase="exiting"])[data-letter-enter="gravity-drop"] .overlay-letter {
+  animation: chat-letter-in-gravity-drop var(--chat-letter-enter-duration,320ms) cubic-bezier(.4,0,.2,1) both;
+  animation-delay: calc(var(--letter-index) * var(--letter-stagger,14ms));
+}
+@keyframes chat-letter-in-split-flap {
+  0% { transform: perspective(220px) rotateX(-85deg); }
+  55% { transform: perspective(220px) rotateX(22deg); }
+  100% { transform: perspective(220px) rotateX(0); }
+}
+@keyframes chat-letter-in-stagger-fade {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes chat-letter-in-blur-focus {
+  from { opacity: 0; filter: blur(12px); transform: scale(1.06); }
+  to { opacity: 1; filter: blur(0); transform: none; }
+}
+@keyframes chat-letter-in-curtain-wipe {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+@keyframes chat-letter-in-glitch-split {
+  0% { opacity: 0; transform: translateX(-3px) skewX(12deg); text-shadow: -3px 0 #ff3b6b,3px 0 #3bd6ff; }
+  20% { opacity: 1; transform: translateX(3px) skewX(-9deg); text-shadow: 3px 0 #ff3b6b,-3px 0 #3bd6ff; }
+  42% { transform: translateX(-2px); clip-path: inset(55% 0 0 0); }
+  60% { transform: translateX(2px); clip-path: inset(0 0 35% 0); }
+  80% { transform: translateX(-1px); clip-path: inset(0); text-shadow: -1px 0 #ff3b6b,1px 0 #3bd6ff; }
+  100% { opacity: 1; transform: none; clip-path: inset(0); text-shadow: none; }
+}
+@keyframes chat-letter-in-dissolve {
+  from { opacity: 0; filter: blur(9px); transform: translateY(5px) scale(.92); }
+  to { opacity: 1; filter: blur(0); transform: none; }
+}
+@keyframes chat-letter-in-fold-collapse {
+  from { transform: perspective(240px) rotateX(-90deg) scaleY(.55); }
+  70% { transform: perspective(240px) rotateX(9deg) scaleY(1.03); }
+  to { transform: none; }
+}
+@keyframes chat-letter-in-gravity-drop {
+  0% { transform: translateY(-78px); }
+  63% { transform: translateY(8px); }
+  82% { transform: translateY(-4px); }
+  100% { transform: none; }
+}
+
+/* Whole-message adaptations of the finite Text Animations specimens.
+   Clip/blur/chromatic effects are temporary; message geometry stays fixed.
+   Backwards fill ensures image/text/style filters are not retained on arrival. */
+.overlay-chat-message[data-enter="blur-focus"]:not([data-phase="exiting"]) {
+  animation: chat-in-blur-focus var(--chat-enter-duration,320ms) ease-out backwards;
+}
+.overlay-chat-message[data-enter="curtain-wipe"]:not([data-phase="exiting"]) {
+  animation: chat-in-curtain-wipe var(--chat-enter-duration,320ms) cubic-bezier(.62,0,.18,1) backwards;
+}
+.overlay-chat-message[data-enter="glitch-split"]:not([data-phase="exiting"]) {
+  animation: chat-in-glitch-split var(--chat-enter-duration,320ms) steps(8,end) backwards;
+}
+.overlay-chat-message[data-enter="dissolve"]:not([data-phase="exiting"]) {
+  animation: chat-in-dissolve var(--chat-enter-duration,320ms) ease-out backwards;
+}
+.overlay-chat-message[data-enter="split-flap"]:not([data-phase="exiting"]) {
+  transform-origin:50% 100%;
+  animation: chat-in-split-flap var(--chat-enter-duration,320ms) cubic-bezier(.2,.8,.2,1) backwards;
+}
+.overlay-chat-message[data-enter="fold-collapse"]:not([data-phase="exiting"]) {
+  transform-origin:50% 0;
+  animation: chat-in-fold-collapse var(--chat-enter-duration,320ms) cubic-bezier(.2,.8,.2,1) backwards;
+}
+@keyframes chat-in-blur-focus {
+  0% {opacity:0;filter:blur(11px);transform:scale(1.04)}
+  60% {opacity:1;filter:blur(2px);transform:scale(1.01)}
+  100% {opacity:1;filter:none;transform:none}
+}
+@keyframes chat-in-curtain-wipe {
+  from {clip-path:inset(0 100% 0 0)}
+  to {clip-path:inset(0)}
+}
+@keyframes chat-in-glitch-split {
+  0% {opacity:0;clip-path:inset(40% 0 40% 0);transform:translateX(-5px) skewX(7deg);filter:drop-shadow(-3px 0 #f75b90) drop-shadow(3px 0 #4dd8ec)}
+  20% {opacity:1;clip-path:inset(0 0 55% 0);transform:translateX(4px) skewX(-5deg);filter:drop-shadow(3px 0 #f75b90) drop-shadow(-3px 0 #4dd8ec)}
+  40% {clip-path:inset(55% 0 0 0);transform:translateX(-3px)}
+  60% {clip-path:inset(0 0 22% 0);transform:translateX(2px)}
+  80% {clip-path:inset(0);transform:translateX(-1px)}
+  100% {opacity:1;clip-path:inset(0);transform:none;filter:none}
+}
+@keyframes chat-in-dissolve {
+  0% {opacity:0;filter:blur(13px) contrast(.8);transform:translateY(6px) scale(.97)}
+  50% {opacity:.6;filter:blur(5px);transform:translateY(2px)}
+  100% {opacity:1;filter:none;transform:none}
+}
+@keyframes chat-in-split-flap {
+  0% {opacity:0;transform:perspective(700px) rotateX(-85deg) scaleY(.6)}
+  54% {opacity:1;transform:perspective(700px) rotateX(16deg) scaleY(1.025)}
+  80% {transform:perspective(700px) rotateX(-4deg)}
+  100% {opacity:1;transform:none}
+}
+@keyframes chat-in-fold-collapse {
+  0% {opacity:0;transform:perspective(700px) rotateX(-100deg) scaleY(.4)}
+  60% {opacity:1;transform:perspective(700px) rotateX(11deg)}
+  85% {transform:perspective(700px) rotateX(-3deg)}
+  100% {opacity:1;transform:none}
+}
+
+/* Natural expiry only: keep the message's occupied slot until completion.
+   Existing explicit letter-exit choice continues to take precedence. */
+.overlay-chat-message[data-phase="exiting"][data-exit="blur-out"] {
+  animation: chat-out-blur-out var(--chat-exit-duration,260ms) ease-in both;
+}
+.overlay-chat-message[data-phase="exiting"][data-exit="curtain-close"] {
+  animation: chat-out-curtain-close var(--chat-exit-duration,260ms) cubic-bezier(.62,0,.18,1) both;
+}
+.overlay-chat-message[data-phase="exiting"][data-exit="glitch-split"] {
+  animation: chat-out-glitch-split var(--chat-exit-duration,260ms) steps(8,end) both;
+}
+.overlay-chat-message[data-phase="exiting"][data-exit="dissolve"] {
+  animation: chat-out-dissolve var(--chat-exit-duration,260ms) ease-in both;
+}
+.overlay-chat-message[data-phase="exiting"][data-exit="split-flap"] {
+  transform-origin:50% 100%;
+  animation: chat-out-split-flap var(--chat-exit-duration,260ms) ease-in both;
+}
+.overlay-chat-message[data-phase="exiting"][data-exit="fold-collapse"] {
+  transform-origin:50% 0;
+  animation: chat-out-fold-collapse var(--chat-exit-duration,260ms) ease-in both;
+}
+@keyframes chat-out-blur-out {
+  0% {opacity:1;filter:none;transform:none}
+  100% {opacity:0;filter:blur(14px);transform:scale(1.04)}
+}
+@keyframes chat-out-curtain-close {
+  from {clip-path:inset(0)}
+  to {clip-path:inset(0 0 0 100%)}
+}
+@keyframes chat-out-glitch-split {
+  0% {opacity:1;filter:none;clip-path:inset(0);transform:none}
+  20% {filter:drop-shadow(-3px 0 #f75b90) drop-shadow(3px 0 #4dd8ec);transform:translateX(-3px);clip-path:inset(0 0 15% 0)}
+  40% {filter:drop-shadow(3px 0 #f75b90) drop-shadow(-3px 0 #4dd8ec);transform:translateX(4px) skewX(5deg);clip-path:inset(45% 0 0 0)}
+  65% {transform:translateX(-5px) skewX(-9deg);clip-path:inset(0 0 55% 0)}
+  100% {opacity:0;filter:none;transform:translateX(6px);clip-path:inset(45% 0 50% 0)}
+}
+@keyframes chat-out-dissolve {
+  0% {opacity:1;filter:none;transform:none}
+  60% {opacity:.5;filter:blur(5px);transform:translateY(-3px)}
+  100% {opacity:0;filter:blur(15px);transform:translateY(-8px) scale(.96)}
+}
+@keyframes chat-out-split-flap {
+  0% {opacity:1;transform:none}
+  30% {transform:perspective(700px) rotateX(18deg)}
+  100% {opacity:0;transform:perspective(700px) rotateX(88deg) scaleY(.5)}
+}
+@keyframes chat-out-fold-collapse {
+  0% {opacity:1;transform:none}
+  40% {transform:perspective(700px) rotateX(-23deg)}
+  100% {opacity:0;transform:perspective(700px) rotateX(-94deg) scaleY(.22)}
+}
+
+/* Bubble-level corner badge. Give it a separate slot rather than letting
+   it wrap with the message text or collide with a floating nameplate. */
+.overlay-repeat-count {
+  display:block;
+  width:max-content;
+  max-width:100%;
+  margin:0 0 .15em auto;
+  position:relative;
+  z-index:4;
+  pointer-events:none;
+  padding:.05em .38em;
+  border:1px solid currentColor;
+  border-radius:999px;
+  font-size:.75em;
+  font-weight:700;
+  line-height:1.25;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  font-variant-numeric:tabular-nums;
+}
+
+/* In two-line layouts, share the top row with the identity, leaving the
+   body at full bubble width. One-line layouts keep their inline flow intact. */
+.overlay-chat-message[data-repeat-badge="true"][data-new-line="true"],
+.overlay-chat-message[data-repeat-badge="true"][data-new-line="true"][data-nameplate="floating"]:not([data-nameplate-empty="true"]) {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,max-content);
+  column-gap:.35em;
+}
+.overlay-chat-message[data-repeat-badge="true"][data-new-line="true"] > .overlay-repeat-count {
+  grid-area:1 / 2;
+  justify-self:end;
+  align-self:start;
+  margin:0;
+}
+.overlay-chat-message[data-repeat-badge="true"][data-new-line="true"] > .overlay-message-header {
+  grid-area:1 / 1;
+  min-width:0;
+  max-width:100%;
+}
+.overlay-chat-message[data-repeat-badge="true"][data-new-line="true"] > .overlay-message-body {
+  grid-area:2 / 1 / 3 / -1;
+}
+.overlay-chat-message[data-repeat-badge="true"] > .overlay-message-header [data-username-wrap] {
+  min-width:0;
+  overflow:hidden;
+}
+.overlay-chat-message[data-repeat-badge="true"] > .overlay-message-header [data-username] {
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* Keep deliberately discrete styles (glitch) and the actual Typewriter
+   DOM/clock owner intact. Word shells and emote images never gain motion. */
+.overlay-chat-message[data-enter]:not([data-enter="none"]):not([data-enter="glitch-split"]):not([data-phase="exiting"]) {
+  animation-timing-function:var(--chat-enter-ease);
+}
+.overlay-chat-message[data-phase="exiting"][data-exit]:not([data-exit="glitch-split"]) {
+  animation-timing-function:var(--chat-exit-ease);
+}
+.overlay-chat-message:not([data-phase="exiting"])[data-letter-enter]:not([data-letter-enter="none"]):not([data-letter-enter="typewriter"]):not([data-letter-enter="glitch-split"]) .overlay-letter {
+  animation-timing-function:var(--chat-letter-ease);
+}
+.overlay-chat-message[data-phase="exiting"][data-letter-exit]:not([data-letter-exit="none"]) .overlay-letter {
+  animation-timing-function:var(--chat-exit-ease);
+}

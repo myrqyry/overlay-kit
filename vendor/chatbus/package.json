@@ -1,0 +1,37 @@
+{
+  "name": "@myrqyry/chatbus",
+  "private": true,
+  "license": "Elastic-2.0",
+  "description": "Framework-neutral livestream chat transport, normalization, emotes, state, and replay.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/myrqyry/chatbus.git"
+  },
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./kick-artwork": "./src/platforms/kick/role-svg.ts",
+    "./streamlabs": "./src/platforms/streamlabs/index.ts",
+    "./youtube-innertube": "./src/platforms/youtube/innertube.ts",
+    "./relay": "./src/relay/index.ts",
+    "./server": "./src/relay/server.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "tiktok-live-connector": "2.4.0",
+    "typescript": "~5.8.3",
+    "vitest": "^4.1.5"
+  },
+  "dependencies": {
+    "@types/node": "^22.20.5",
+    "@types/ws": "^8.18.2",
+    "ws": "^8.22.1",
+    "youtube-chat-next": "3.1.0"
+  }
+}

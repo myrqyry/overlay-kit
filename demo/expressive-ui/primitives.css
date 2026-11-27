@@ -1,0 +1,222 @@
+/* Synced from myrqyry/neumorphic-ui web contract. Keep app-specific overrides outside this directory. */
+/*
+ * Opt-in web primitives for Expressive UI.
+ *
+ * They intentionally avoid layout policy. Use these as material/interaction
+ * building blocks and keep each product's own information architecture.
+ */
+
+.eui-surface {
+  color: var(--eui-text);
+  background: var(--eui-surface);
+  border: 1px solid var(--eui-line);
+  border-radius: var(--eui-radius-lg);
+  box-shadow: var(--eui-shadow-soft);
+}
+
+.eui-raised {
+  color: var(--eui-text);
+  background: linear-gradient(
+    180deg,
+    var(--eui-surface-raised),
+    var(--eui-surface)
+  );
+  border: 1px solid var(--eui-line);
+  border-radius: var(--eui-radius-md);
+  box-shadow: var(--eui-shadow-raised);
+}
+
+.eui-well {
+  color: var(--eui-text);
+  background: var(--eui-surface-inset);
+  border: 1px solid var(--eui-line);
+  border-radius: var(--eui-radius-md);
+  box-shadow: var(--eui-shadow-inset);
+}
+
+.eui-control {
+  min-height: var(--eui-control-compact);
+  padding-inline: var(--eui-space-3);
+  color: var(--eui-text);
+  background: linear-gradient(
+    180deg,
+    var(--eui-surface-raised),
+    var(--eui-surface-soft)
+  );
+  border: 1px solid var(--eui-line);
+  border-radius: var(--eui-radius-sm);
+  box-shadow: var(--eui-shadow-raised);
+  font: inherit;
+  transition:
+    transform var(--eui-duration-normal) var(--eui-motion-tactile),
+    background-color var(--eui-duration-normal) ease,
+    border-color var(--eui-duration-normal) ease,
+    box-shadow var(--eui-duration-normal) ease;
+}
+
+.eui-control:hover:not(:disabled) {
+  border-color: var(--eui-line-strong);
+}
+
+.eui-control:active:not(:disabled) {
+  transform: translateY(1px) scale(.985);
+  box-shadow: var(--eui-shadow-inset);
+}
+
+.eui-control[aria-pressed='true'],
+.eui-control[aria-selected='true'],
+.eui-control[data-selected='true'] {
+  color: var(--eui-accent-strong);
+  border-color: color-mix(in srgb, var(--eui-accent) 48%, var(--eui-line));
+  background: color-mix(in srgb, var(--eui-accent) 16%, var(--eui-surface));
+}
+
+.eui-icon-button {
+  width: var(--eui-control-target);
+  height: var(--eui-control-target);
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+}
+
+.eui-pill {
+  border-radius: var(--eui-radius-pill);
+}
+
+.eui-control:focus-visible,
+.eui-range:focus-visible,
+.eui-switch:focus-visible,
+.eui-field:focus-visible {
+  outline: var(--eui-focus-ring);
+  outline-offset: var(--eui-focus-offset);
+}
+
+.eui-field {
+  min-height: 44px;
+  padding-inline: var(--eui-space-3);
+  color: var(--eui-text);
+  background: var(--eui-surface-inset);
+  border: 1px solid var(--eui-line);
+  border-radius: var(--eui-radius-md);
+  box-shadow: var(--eui-shadow-inset);
+  font: inherit;
+}
+
+.eui-field::placeholder {
+  color: var(--eui-quiet);
+}
+
+.eui-range {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: var(--eui-control-target);
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+
+.eui-range::-webkit-slider-runnable-track {
+  height: var(--eui-slider-rail);
+  border: 1px solid var(--eui-line);
+  border-radius: var(--eui-radius-pill);
+  background: linear-gradient(
+    90deg,
+    var(--eui-accent) 0 var(--eui-range-progress, 0%),
+    var(--eui-surface-inset) var(--eui-range-progress, 0%) 100%
+  );
+  box-shadow: var(--eui-shadow-inset);
+}
+
+.eui-range::-moz-range-track {
+  height: var(--eui-slider-rail);
+  border: 1px solid var(--eui-line);
+  border-radius: var(--eui-radius-pill);
+  background: var(--eui-surface-inset);
+  box-shadow: var(--eui-shadow-inset);
+}
+
+.eui-range::-moz-range-progress {
+  height: var(--eui-slider-rail);
+  border-radius: var(--eui-radius-pill);
+  background: var(--eui-accent);
+}
+
+.eui-range::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: var(--eui-slider-thumb);
+  height: var(--eui-slider-thumb);
+  margin-top: -1px;
+  border: 2px solid var(--eui-accent-strong);
+  border-radius: 50%;
+  background: var(--eui-accent);
+  box-shadow: var(--eui-shadow-raised);
+}
+
+.eui-range::-moz-range-thumb {
+  width: calc(var(--eui-slider-thumb) - 4px);
+  height: calc(var(--eui-slider-thumb) - 4px);
+  border: 2px solid var(--eui-accent-strong);
+  border-radius: 50%;
+  background: var(--eui-accent);
+  box-shadow: var(--eui-shadow-raised);
+}
+
+.eui-switch {
+  appearance: none;
+  position: relative;
+  width: 40px;
+  height: 24px;
+  margin: 0;
+  border: 1px solid var(--eui-line);
+  border-radius: var(--eui-radius-pill);
+  background: var(--eui-surface-inset);
+  box-shadow: var(--eui-shadow-inset);
+  cursor: pointer;
+  transition:
+    background-color var(--eui-duration-normal) ease,
+    border-color var(--eui-duration-normal) ease;
+}
+
+.eui-switch::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 2px;
+  top: 2px;
+  border-radius: 50%;
+  background: var(--eui-muted);
+  box-shadow: var(--eui-shadow-raised);
+  transition:
+    transform var(--eui-duration-normal) var(--eui-motion-tactile),
+    background-color var(--eui-duration-normal) ease;
+}
+
+.eui-switch:checked {
+  border-color: color-mix(in srgb, var(--eui-accent) 58%, var(--eui-line));
+  background: color-mix(in srgb, var(--eui-accent) 32%, var(--eui-surface-inset));
+}
+
+.eui-switch:checked::before {
+  transform: translateX(16px);
+  background: var(--eui-accent-strong);
+}
+
+.eui-status-success { color: var(--eui-success); }
+.eui-status-warning { color: var(--eui-warning); }
+.eui-status-danger { color: var(--eui-danger); }
+
+@media (prefers-reduced-motion: reduce) {
+  .eui-control,
+  .eui-range,
+  .eui-switch,
+  .eui-switch::before {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

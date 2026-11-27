@@ -1,0 +1,136 @@
+/* Transparent browser-source notifications driven by the Chatbus social-signal stream. */
+body[data-view="events"] #overlay-root { display:block; }
+.overlay-events {
+  --event-accent:#bcd5c4;
+  --event-accent-border:#bed4ba63;
+  --event-accent-glow:#101a2060;
+  width:100%;height:100%;min-height:0;display:flex;align-items:center;justify-content:center;
+  padding:clamp(8px,4vmin,44px);pointer-events:none;overflow:hidden;
+}
+.overlay-events[data-position="top"] { align-items:flex-start; }
+.overlay-events[data-position="bottom"] { align-items:flex-end; }
+.overlay-events[data-accent="mint"] { --event-accent:#a9ecc3; --event-accent-border:#a9ecc366; --event-accent-glow:#0f2e2066; }
+.overlay-events[data-accent="amber"] { --event-accent:#f4cf8a; --event-accent-border:#f4cf8a66; --event-accent-glow:#2a1e0966; }
+.overlay-events[data-accent="rose"] { --event-accent:#f6a9bd; --event-accent-border:#f6a9bd66; --event-accent-glow:#2a0d1766; }
+.overlay-events[data-accent="violet"] { --event-accent:#c9b4ff; --event-accent-border:#c9b4ff66; --event-accent-glow:#1d103366; }
+.overlay-events[data-accent="monochrome"] { --event-accent:#e8e8e2; --event-accent-border:#e8e8e266; --event-accent-glow:#10101066; }
+.overlay-events[data-family="rounded"] .overlay-event-alert {font-family:'Trebuchet MS',Verdana,sans-serif;}
+.overlay-events[data-family="mono"] .overlay-event-alert {font-family:'DejaVu Sans Mono',Consolas,monospace;}
+.overlay-events[data-family="serif"] .overlay-event-alert {font-family:Georgia,'Times New Roman',serif;}
+.overlay-event-alert {
+  min-width:0; max-width:min(94%,880px);
+  padding:clamp(6px,1.6vmin,28px) clamp(8px,2.8vmin,42px); text-align:center;
+  color:#f4f5e9;border:1px solid var(--event-accent-border);border-radius:18px;
+  background:linear-gradient(135deg,#172722e8,#2e3435df);
+  box-shadow:0 12px 40px var(--event-accent-glow), inset 0 1px 1px #ffffff22;
+  text-shadow:0 2px 8px #0008;overflow-wrap:anywhere;
+  font-family:system-ui,sans-serif;
+}
+.overlay-event-heading {font-weight:700;font-size:clamp(9px,1.8vmin,15px);line-height:1.4;font-family:inherit;
+  color:var(--event-accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:clamp(3px,.75vmin,8px);}
+.overlay-event-message {font-weight:650;font-size:clamp(12px,min(var(--events-font,36px),8vmin),var(--events-font,36px));line-height:1.18;font-family:inherit;letter-spacing:-.025em;}
+.overlay-events[data-style="paper"] .overlay-event-alert {
+  background:#e9e4d7; color:#252e2b;border-color:#c4aa87;box-shadow:0 8px 24px #1115;text-shadow:none;
+  border-radius:5px;transform:rotate(-.35deg);
+}
+.overlay-events[data-style="paper"] .overlay-event-heading { color:#677f65; }
+.overlay-events[data-style="minimal"] .overlay-event-alert {
+  background:transparent;border:0;border-radius:0;box-shadow:none;
+  text-shadow:0 2px 8px #000,0 1px 14px #000b;
+}
+.overlay-events[data-accent]:not([data-accent="theme"]) .overlay-event-heading { color:var(--event-accent); }
+.overlay-events[data-accent]:not([data-accent="theme"])[data-style="soft"] .overlay-event-alert {border-color:var(--event-accent-border);}
+.overlay-events[data-motion="rise"] .overlay-event-alert {animation:event-rise var(--event-enter-duration,340ms) cubic-bezier(.2,.8,.2,1) both;}
+.overlay-events[data-motion="pop"] .overlay-event-alert {animation:event-pop var(--event-enter-duration,340ms) cubic-bezier(.18,1,.4,1) both;}
+/* Entrance-only animations. Separate translate/scale/rotate preserve Paper's rotation. */
+.overlay-events[data-motion="sweep"] .overlay-event-alert {animation:event-sweep var(--event-enter-duration,340ms) cubic-bezier(.18,.85,.18,1) both;}
+.overlay-events[data-motion="unfold"] .overlay-event-alert {animation:event-unfold var(--event-enter-duration,340ms) cubic-bezier(.2,.8,.2,1) both;}
+ .overlay-events[data-motion="flip"] .overlay-event-alert {animation:event-flip var(--event-enter-duration,340ms) ease-out both;}
+.overlay-events[data-motion="spring"] .overlay-event-alert {animation:event-spring var(--event-enter-duration,340ms) cubic-bezier(.18,.8,.2,1) both;}
+.overlay-events[data-motion="blur-focus"] .overlay-event-alert {animation:event-blur-focus var(--event-enter-duration,340ms) ease-out both;}
+.overlay-events[data-motion="curtain-wipe"] .overlay-event-alert {animation:event-curtain-wipe var(--event-enter-duration,340ms) cubic-bezier(.62,0,.18,1) both;}
+.overlay-events[data-motion="glitch-split"] .overlay-event-alert {animation:event-glitch-split var(--event-enter-duration,340ms) steps(8,end) both;}
+.overlay-events[data-motion="dissolve"] .overlay-event-alert {animation:event-dissolve var(--event-enter-duration,340ms) ease-out both;}
+.overlay-events[data-motion="split-flap"] .overlay-event-alert {transform-origin:50% 100%;animation:event-split-flap var(--event-enter-duration,340ms) cubic-bezier(.2,.8,.2,1) both;}
+.overlay-events[data-motion="fold-collapse"] .overlay-event-alert {transform-origin:50% 0;animation:event-fold-collapse var(--event-enter-duration,340ms) cubic-bezier(.2,.8,.2,1) both;}
+@keyframes event-flip {
+  from {opacity:0;rotate:x -72deg;scale:.94}
+  to {opacity:1;rotate:x 0deg;scale:1}
+}
+@keyframes event-spring {
+  0% {opacity:0;translate:0 20px;scale:.8}
+  67% {opacity:1;translate:0 -5px;scale:1.05}
+  100% {opacity:1;translate:0 0;scale:1}
+}
+@keyframes event-sweep {from {opacity:0;translate:-45px 0;scale:.97} to {opacity:1;translate:0 0;scale:1}}
+@keyframes event-unfold {from {opacity:0;scale:.76 1;translate:0 8px} to {opacity:1;scale:1 1;translate:0 0}}
+@keyframes event-rise {from {opacity:0;translate:0 16px;} to {opacity:1;translate:0 0;}}
+@keyframes event-pop {from {opacity:0;scale:.87;} to {opacity:1;scale:1;}}
+@keyframes event-blur-focus {
+  0% {opacity:0;filter:blur(11px);scale:1.04}
+  60% {opacity:1;filter:blur(2px);scale:1.01}
+  100% {opacity:1;filter:none;scale:1}
+}
+@keyframes event-curtain-wipe {
+  from {clip-path:inset(0 100% 0 0)}
+  to {clip-path:inset(0)}
+}
+@keyframes event-glitch-split {
+  0% {opacity:0;clip-path:inset(40% 0 40% 0);translate:-5px 0;filter:drop-shadow(-3px 0 #f75b90) drop-shadow(3px 0 #4dd8ec)}
+  20% {opacity:1;clip-path:inset(0 0 55% 0);translate:4px 0;filter:drop-shadow(3px 0 #f75b90) drop-shadow(-3px 0 #4dd8ec)}
+  40% {clip-path:inset(55% 0 0 0);translate:-3px 0}
+  60% {clip-path:inset(0 0 22% 0);translate:2px 0}
+  80% {clip-path:inset(0);translate:-1px 0}
+  100% {opacity:1;clip-path:inset(0);translate:0 0;filter:none}
+}
+@keyframes event-dissolve {
+  0% {opacity:0;filter:blur(13px) contrast(.8);translate:0 6px;scale:.97}
+  50% {opacity:.6;filter:blur(5px);translate:0 2px}
+  100% {opacity:1;filter:none;translate:0 0;scale:1}
+}
+@keyframes event-split-flap {
+  0% {opacity:0;rotate:x -85deg;scale:1 .6}
+  54% {opacity:1;rotate:x 16deg;scale:1 1.025}
+  80% {rotate:x -4deg}
+  100% {opacity:1;rotate:x 0deg;scale:1}
+}
+@keyframes event-fold-collapse {
+  0% {opacity:0;rotate:x -100deg;scale:1 .4}
+  60% {opacity:1;rotate:x 11deg}
+  85% {rotate:x -3deg}
+  100% {opacity:1;rotate:x 0deg;scale:1}
+}
+@media(prefers-reduced-motion:reduce){
+ .overlay-events .overlay-event-alert {animation:none !important;transition:none !important;}
+}
+
+/* Exit runs after the hold expires, whether or not another alert is queued. */
+.overlay-events .overlay-event-alert[data-phase="exiting"] {animation:none;}
+.overlay-events[data-exit="fade"] .overlay-event-alert[data-phase="exiting"] {animation:event-out-fade var(--event-exit-duration,300ms) ease-in both;}
+.overlay-events[data-exit="sink"] .overlay-event-alert[data-phase="exiting"] {animation:event-out-sink var(--event-exit-duration,300ms) ease-in both;}
+.overlay-events[data-exit="shrink"] .overlay-event-alert[data-phase="exiting"] {animation:event-out-shrink var(--event-exit-duration,300ms) ease-in both;}
+.overlay-events[data-exit="flip"] .overlay-event-alert[data-phase="exiting"] {animation:event-out-flip var(--event-exit-duration,300ms) ease-in both;}
+.overlay-events[data-exit="spring"] .overlay-event-alert[data-phase="exiting"] {animation:event-out-spring var(--event-exit-duration,300ms) ease-in both;}
+.overlay-events[data-exit="blur-out"] .overlay-event-alert[data-phase="exiting"] {animation:event-out-blur-out var(--event-exit-duration,300ms) ease-in both;}
+.overlay-events[data-exit="curtain-close"] .overlay-event-alert[data-phase="exiting"] {animation:event-out-curtain-close var(--event-exit-duration,300ms) cubic-bezier(.62,0,.18,1) both;}
+.overlay-events[data-exit="glitch-split"] .overlay-event-alert[data-phase="exiting"] {animation:event-out-glitch-split var(--event-exit-duration,300ms) steps(8,end) both;}
+.overlay-events[data-exit="dissolve"] .overlay-event-alert[data-phase="exiting"] {animation:event-out-dissolve var(--event-exit-duration,300ms) ease-in both;}
+.overlay-events[data-exit="split-flap"] .overlay-event-alert[data-phase="exiting"] {transform-origin:50% 100%;animation:event-out-split-flap var(--event-exit-duration,300ms) ease-in both;}
+.overlay-events[data-exit="fold-collapse"] .overlay-event-alert[data-phase="exiting"] {transform-origin:50% 0;animation:event-out-fold-collapse var(--event-exit-duration,300ms) ease-in both;}
+@keyframes event-out-fade {from {opacity:1} to {opacity:0}}
+@keyframes event-out-sink {from {opacity:1;translate:0 0} to {opacity:0;translate:0 24px}}
+@keyframes event-out-shrink {from {opacity:1;scale:1} to {opacity:0;scale:.68}}
+@keyframes event-out-flip {from {opacity:1;rotate:x 0deg} to {opacity:0;rotate:x 75deg}}
+@keyframes event-out-spring {0% {opacity:1;translate:0 0;scale:1} 30% {translate:0 -5px;scale:1.04} 100% {opacity:0;translate:0 22px;scale:.75}}
+@keyframes event-out-blur-out {0% {opacity:1;filter:none;scale:1} 100% {opacity:0;filter:blur(14px);scale:1.04}}
+@keyframes event-out-curtain-close {from {clip-path:inset(0)} to {clip-path:inset(0 0 0 100%)}}
+@keyframes event-out-glitch-split {
+  0% {opacity:1;filter:none;clip-path:inset(0);translate:0 0}
+  20% {filter:drop-shadow(-3px 0 #f75b90) drop-shadow(3px 0 #4dd8ec);translate:-3px 0;clip-path:inset(0 0 15% 0)}
+  40% {filter:drop-shadow(3px 0 #f75b90) drop-shadow(-3px 0 #4dd8ec);translate:4px 0;clip-path:inset(45% 0 0 0)}
+  65% {translate:-5px 0;clip-path:inset(0 0 55% 0)}
+  100% {opacity:0;filter:none;translate:6px 0;clip-path:inset(45% 0 50% 0)}
+}
+@keyframes event-out-dissolve {0% {opacity:1;filter:none;translate:0 0;scale:1} 60% {opacity:.5;filter:blur(5px);translate:0 -3px} 100% {opacity:0;filter:blur(15px);translate:0 -8px;scale:.96}}
+@keyframes event-out-split-flap {0% {opacity:1;rotate:x 0deg;scale:1} 30% {rotate:x 18deg} 100% {opacity:0;rotate:x 88deg;scale:1 .5}}
+@keyframes event-out-fold-collapse {0% {opacity:1;rotate:x 0deg;scale:1} 40% {rotate:x -23deg} 100% {opacity:0;rotate:x -94deg;scale:1 .22}}

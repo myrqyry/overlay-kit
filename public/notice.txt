@@ -1,0 +1,37 @@
+﻿Overlay Kit
+Copyright (c) 2026 myrqyry
+Original project: https://github.com/myrqyry/overlay-kit
+
+Developed in collaboration with a trusted AI colleague. This voluntary
+acknowledgment recognizes the development collaboration, not a statement
+about code quality or a claim of separate AI copyright ownership.
+
+Original project material is licensed under Elastic License 2.0 (ELv2).
+See LICENSE for the full terms. The licensor's notices must be retained.
+Alternative commercial licensing requires separate written permission from
+the relevant rights holder; contact the project maintainer.
+
+Third-party material is not relicensed under ELv2. Existing rights, notices,
+and terms remain applicable. In particular:
+- Chatbus: first-party source snapshot of the public ELv2 project
+  https://github.com/myrqyry/chatbus, identified by vendor/chatbus/UPSTREAM_COMMIT.
+  Its original LICENSE and NOTICE are preserved in vendor/chatbus/.
+- MingCute icons (@mingcute/icons 3.0.2): Apache-2.0.
+  https://github.com/MingCute-Design/MingCute
+- GSAP 3.15.0: Standard "No Charge" GSAP License, Webflow.
+  https://gsap.com/standard-license/
+- tiktok-live-connector 2.4.0 and ws 8.22.0: MIT.
+  Their respective license notices remain applicable.
+- Complete installed production dependency inventory and known license/copyright
+  texts: THIRD_PARTY_NOTICES.txt. Where a package omits its license file,
+  the upstream provenance is recorded. The source release contains no
+  third-party npm implementation code; dependencies install from the registry.
+- Platform identifiers, optional user-supplied badge artwork, emote images, fonts, and remote
+  cosmetics remain subject to their respective owners' rights and service
+  terms. Inclusion or display is not a grant of redistribution rights.
+- See TECHNICAL.md for design references and provenance.
+
+Official Kick role SVGs are acquired at runtime, not shipped in the source tree.
+See docs/release-readiness.md for the completed source distribution review,
+notice provenance, and the clean source export procedure. Platform names and
+service-identifying pictograms identify integrations, not endorsement.

@@ -1,0 +1,49 @@
+{
+  "name": "@myrqyry/overlay-kit",
+  "private": true,
+  "license": "Elastic-2.0",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Composable browser overlays for emote walls, chat and future OBS views.",
+  "scripts": {
+    "test": "vitest run",
+    "licenses:generate": "node scripts/third-party-notices.mjs",
+    "licenses:check": "node scripts/third-party-notices.mjs --check",
+    "release:source": "node scripts/export-source-release.mjs",
+    "art:install": "node scripts/install-kick-art.mjs",
+    "fonts:update": "node scripts/update-google-fonts.mjs",
+    "typecheck": "tsc --noEmit",
+    "build": "pnpm licenses:check && tsc --noEmit && node scripts/build-hosted-api.mjs && vite build",
+    "dev": "tsx server/dev.ts",
+    "live": "pnpm build && tsx server/start.ts",
+    "dev:vite": "vite --host 127.0.0.1"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./chatbus": "./src/chatbus.ts",
+    "./chat-motion.css": "./src/chat-motion.css",
+    "./ffz-effects.css": "./src/ffz-effects.css",
+    "./chat-style-packs.css": "./src/chat-style-packs.css",
+    "./wall-style-packs.css": "./src/wall-style-packs.css",
+    "./wall-motion.css": "./src/wall-motion.css"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/ws": "^8.18.2",
+    "esbuild": "0.28.2",
+    "jsdom": "^27.0.0",
+    "tsx": "^4.23.15",
+    "typescript": "~5.8.3",
+    "vite": "^7.1.0",
+    "vitest": "^4.1.8"
+  },
+  "dependencies": {
+    "@mingcute/icons": "3.0.2",
+    "@myrqyry/chatbus": "file:vendor/chatbus",
+    "gsap": "^3.15.0",
+    "tiktok-live-connector": "2.4.0",
+    "ws": "^8.22.0",
+    "youtube-chat-next": "3.1.0"
+  },
+  "packageManager": "pnpm@11.17.0"
+}
