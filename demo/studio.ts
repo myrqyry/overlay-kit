@@ -176,7 +176,7 @@ function renderLive(status:WireLiveStatus) {
           +' · Emotes: '+(detail?.emotes??'idle')+' · Badges: '+(detail?.badges??'idle')
           +(detail?.error?' · '+detail.error:'');
       }).join('; ')
-    : directBrowserLive?'Browser-direct Twitch chat. Other providers: run pnpm live locally.':'Disconnected. Add a live-chat source.';
+    : directBrowserLive?'Browser-direct Twitch and Kick chat. Other providers: run pnpm live locally.':'Disconnected. Add a live-chat source.';
 }
 async function commandLive(action: 'connect'|SourceAction,target?:ViewerSource) {
   const platform=target?.platform??normalizeViewerPlatform(livePlatform.value)??'twitch';
@@ -282,7 +282,7 @@ void getPreferredLiveCapability().then(async capability=>{
   if(capability.mode==='hosted'||capability.mode==='browser'){
     hostedLive=true;
     directBrowserLive=capability.mode==='browser';
-    liveStatus.textContent=directBrowserLive?'Browser-direct Twitch chat. Other providers: run pnpm live locally.':'Disconnected. Add a live-chat source.';
+    liveStatus.textContent=directBrowserLive?'Browser-direct Twitch and Kick chat. Other providers: run pnpm live locally.':'Disconnected. Add a live-chat source.';
 
     const defaultChannel=normalizeViewerChannel(capability.channel,capability.platform);
     selectedHostedSources=restoreHostedViewerSources(

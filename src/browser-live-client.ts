@@ -3,7 +3,7 @@ import type {SocialSignalV1} from '@myrqyry/chatbus';
 import {createLiveMixer,type LiveSource} from '../server/live-hub';
 import {createUserCosmeticsResolver} from '../server/cosmetics';
 import {createTwitchBadgeCatalog} from '../server/twitch-badges';
-import {fetchTwitchUserAvatar} from '@myrqyry/chatbus';
+import {fetchTwitchUserAvatar,fetchKickUserAvatar,createKickBadgeCatalog} from '@myrqyry/chatbus';
 import {loadTwitchSourcePortrait} from '../server/twitch-source-identity';
 import {getLiveCapability,connectLiveSource,type LiveCapability,type WireLiveStatus} from './live-client';
 import type {ViewerSource,ViewerPlatform} from './channel-choice';
@@ -36,8 +36,8 @@ export function connectBrowserLiveSource(
    onStatus?.({...status,platform:status.platform??undefined,sources:'sources' in status?(status as import('../server/live-hub').LiveMixerStatus).sources.map(item=>({...item,platform:item.platform??undefined})):undefined});
   }
  },source?()=>createTwitchBadgeCatalog(async()=>[]):createTwitchBadgeCatalog,
- source?undefined:createUserCosmeticsResolver,undefined,
- source?undefined:loadTwitchSourcePortrait,undefined,source?undefined:fetchTwitchUserAvatar);
+ source?undefined:createUserCosmeticsResolver,source?()=>createKickBadgeCatalog(async()=>({})):undefined,
+ source?undefined:loadTwitchSourcePortrait,source?undefined:fetchKickUserAvatar,source?undefined:fetchTwitchUserAvatar);
  const dispose=()=>{if(disposed)return;disposed=true;mixer.close();};
  if(!supportsBrowserPublicChat(selection.platform)){
   onStatus?.({platform:selection.platform,channel:selection.channel,state:'error',emotes:'idle',badges:'idle',error:'This provider requires a local relay'});

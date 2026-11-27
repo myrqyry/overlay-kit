@@ -86,7 +86,7 @@ The development host defaults to port 5173. The standalone host defaults to 5219
 ## Browser-only hosting
 
 The public source supports a free static GitHub Pages build. Browser mode uses
-the pinned Chatbus browser entrypoint and connects directly to Twitch IRC,
+the pinned Chatbus browser entrypoint and connects directly to Twitch IRC and Kick Pusher,
 with existing emote, badge and cosmetic enrichment where provider APIs permit.
 The editor and independently opened OBS source pages do not need our server.
 
@@ -95,8 +95,9 @@ pnpm build:pages
 ```
 
 Deploy only `dist-pages/`. The build uses relative project-site assets.
-Twitch public chat is the only direct provider currently advertised. Kick
-realtime negotiation is blocked by CORS from the Pages origin; public YouTube
+Twitch and Kick public chat connect directly. Kick uses the public Pusher
+transport descriptor refreshed by Chatbus's GitHub Pages publisher; its
+Centrifugo negotiation remains Node-only because of CORS. Public YouTube
 and TikTok require Node. For those providers or account authorization, use
 the local `pnpm live` editor instead. No browser security checks are bypassed,
 and the public frontend does not attempt to reach an arbitrary remote or

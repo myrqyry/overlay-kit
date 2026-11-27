@@ -223,8 +223,10 @@ server discovery. Browser mode does not advertise unavailable providers,
 send credentials, or probe localhost from a public HTTPS page. Chromium
 verification at the Pages origin (local static assets, real upstream
 network) joined Twitch and rendered an independent live chat message after
-the editor closed. Kick discovery succeeded but realtime negotiation
-was blocked by CORS. Native OBS CEF and a deployed Pages origin are separate
+the editor closed. Kick discovery and direct Pusher public chat worked with a provider-issued
+public descriptor; the normal realtime negotiation remains CORS-blocked.
+Chatbus refreshes its static metadata through scheduled Pages builds, not a
+chat relay. Native emotes and 7TV use existing browser provider APIs. Native OBS CEF and a deployed Pages origin are separate
 verification boundaries.
 
 ## Optional Vercel hosting

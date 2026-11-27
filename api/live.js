@@ -1976,6 +1976,40 @@ function parseKickPusherFrame(frame) {
   return { type, data: rawData };
 }
 
+// node_modules/.pnpm/@myrqyry+chatbus@file+vendor+chatbus_debug@4.4.3/node_modules/@myrqyry/chatbus/src/platforms/kick/public-transport.ts
+var KICK_PUBLIC_TRANSPORT_URL = "https://myrqyry.github.io/chatbus/kick-public-transport.json";
+function validatePublicPusher(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw Error("Invalid Kick public Pusher metadata");
+  const v = value;
+  if (typeof v.appKey !== "string" || !/^[a-z0-9]{8,80}$/i.test(v.appKey) || typeof v.cluster !== "string" || !/^[a-z0-9-]{1,20}$/i.test(v.cluster)) throw Error("Invalid Kick public Pusher metadata");
+  return { appKey: v.appKey, cluster: v.cluster };
+}
+function parseKickPublicTransport(value, now = Date.now()) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw Error("Invalid Kick public transport descriptor");
+  const v = value;
+  if (Object.keys(v).some((k) => !["schema", "provider", "appKey", "cluster", "observedAt"].includes(k)) || v.schema !== 1 || v.provider !== "pusher" || typeof v.observedAt !== "string") throw Error("Invalid Kick public transport descriptor");
+  const age = now - Date.parse(v.observedAt);
+  if (!Number.isFinite(age) || age > 48 * 36e5 || age < -5 * 6e4) throw Error("Kick public transport descriptor is stale");
+  return validatePublicPusher(v);
+}
+async function loadKickPublicTransport(signal, fetcher = fetch, now = Date.now) {
+  const controller = new AbortController();
+  const abort = () => controller.abort();
+  if (signal?.aborted) abort();
+  signal?.addEventListener("abort", abort, { once: true });
+  const timer = setTimeout(abort, 5e3);
+  try {
+    const response = await fetcher(KICK_PUBLIC_TRANSPORT_URL, { signal: controller.signal, credentials: "omit", redirect: "error", cache: "no-store" });
+    if (!response.ok || Number(response.headers.get("content-length")) > 2048) throw Error("Kick public transport descriptor unavailable");
+    const body = await response.text();
+    if (body.length > 2048) throw Error("Kick public transport descriptor too large");
+    return parseKickPublicTransport(JSON.parse(body), now());
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener("abort", abort);
+  }
+}
+
 // node_modules/.pnpm/@myrqyry+chatbus@file+vendor+chatbus_debug@4.4.3/node_modules/@myrqyry/chatbus/src/platforms/kick/socket.ts
 var REALTIME_BASE_URL = "https://web.kick.com/api/v1/realtime";
 var PUSHER_VERSION = "protocol=7&client=js&version=8.4.0&flash=false";
@@ -2281,7 +2315,10 @@ function createKickSocket(chatroomId, options = {}) {
     const clientId = randomClientId();
     try {
       let endpoint = null;
-      if (options.appKey) {
+      if (options.resolvePublicPusher) {
+        const { appKey, cluster } = validatePublicPusher(await options.resolvePublicPusher(controller.signal));
+        endpoint = { provider: "pusher", url: `wss://ws-${cluster}.pusher.com/app/${appKey}?${PUSHER_VERSION}` };
+      } else if (options.appKey) {
         const base = (options.baseUrl ?? "wss://ws-us2.pusher.com/app").replace(/\/$/u, "");
         endpoint = { provider: "pusher", url: `${base}/${options.appKey}?${PUSHER_VERSION}` };
       } else {
@@ -3633,22 +3670,64 @@ function connectTwitchIrcChat(options) {
 }
 
 // node_modules/.pnpm/@myrqyry+chatbus@file+vendor+chatbus_debug@4.4.3/node_modules/@myrqyry/chatbus/src/browser.ts
-var browserPublicPlatforms = ["twitch"];
+var browserPublicPlatforms = ["twitch", "kick"];
 function supportsBrowserPublicChat(platform) {
   return browserPublicPlatforms.some((item) => item === platform);
 }
 function requireDirect(platform) {
   if (!supportsBrowserPublicChat(platform)) throw new Error(platform + " requires a compatible Chatbus relay for public chat");
 }
-function createBrowserChatSource() {
+function createBrowserChatSource(config = {}) {
   return {
     connect({ platform = "twitch", ...options }) {
       requireDirect(platform);
-      return connectTwitchIrcChat(options);
+      if (platform === "twitch") return connectTwitchIrcChat(options);
+      const controller = new AbortController();
+      let closed = false, active;
+      const close = () => {
+        if (closed) return;
+        closed = true;
+        controller.abort();
+        active?.close();
+        active = void 0;
+        options.signal?.removeEventListener("abort", close);
+      };
+      if (options.signal?.aborted) {
+        close();
+        return { close };
+      }
+      options.signal?.addEventListener("abort", close, { once: true });
+      options.onStateChange?.("connecting");
+      void connectKickChat({
+        ...options,
+        signal: controller.signal,
+        emitInitialHistory: false,
+        socket: { resolvePublicPusher: config.loadKickPublicTransport ?? loadKickPublicTransport },
+        onEvent: (event) => {
+          if (!closed) options.onEvent(event);
+        },
+        onStateChange: (state) => {
+          if (!closed) options.onStateChange?.(state);
+        },
+        onError: (error) => {
+          if (!closed) options.onError?.(error);
+        }
+      }).then((connection) => {
+        if (closed) connection.close();
+        else active = connection;
+      }, (error) => {
+        if (closed) return;
+        options.onStateChange?.("error");
+        options.onError?.(error instanceof Error ? error : new Error("Kick browser connection failed"));
+      });
+      return { close };
     },
     async emotes(channel, platform = "twitch") {
       requireDirect(platform);
-      return fetchChannelEmotesDetailed(channel);
+      if (platform === "twitch") return fetchChannelEmotesDetailed(channel);
+      const resolved = await resolveKickChannel(channel);
+      const results = await Promise.all([fetchGlobalSevenTv(), ...resolved.channelId ? [fetchKickChannelSevenTv(resolved.channelId)] : []]);
+      return { emotes: mergeCandidates(results.flatMap((r) => r.candidates)), complete: results.every((r) => r.status.ok) };
     }
   };
 }

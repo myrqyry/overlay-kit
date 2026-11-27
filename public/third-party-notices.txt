@@ -492,7 +492,7 @@ Installed LICENSE
 @myrqyry/chatbus@0.1.0
 Declared license: Elastic-2.0
 
-First-party pinned source snapshot: 959c9e137f51c0f23d779cacdb1af74b2272ecaf
+First-party pinned source snapshot: b1dfe2d1c6ebe7b071404459c4f3cd7301e20b85
 Upstream project: https://github.com/myrqyry/chatbus
 Original upstream NOTICE:
 Chatbus

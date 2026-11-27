@@ -13,7 +13,7 @@ claim that every possible downstream deployment or redistribution is licensed.
 - Overlay Kit and the pinned Chatbus source snapshot both use the
   unmodified Elastic License 2.0. Chatbus upstream source, package manifest,
   LICENSE and NOTICE are verified byte-for-byte against the public commit
-  `959c9e137f51c0f23d779cacdb1af74b2272ecaf`. The upstream repository is
+  `b1dfe2d1c6ebe7b071404459c4f3cd7301e20b85`. The upstream repository is
   https://github.com/myrqyry/chatbus.
 - The installed production dependency inventory covers 70 package versions.
   Most are MIT, Apache-2.0, BSD or other permissive terms. The complete known
