@@ -12,7 +12,7 @@ const out=resolve(destination);
 if(out===resolve(root)||out.startsWith(resolve(root)+sep))throw Error('Choose an output path outside the development repository');
 if(!out.endsWith('.zip'))throw Error('Destination must end in .zip');
 if(git(['status','--porcelain','--untracked-files=normal']).trim())throw Error('Commit reviewed changes before exporting');
-const roots=['.gitignore','AGENTS.md','LICENSE','NOTICE','README.md','TECHNICAL.md','THIRD_PARTY_NOTICES.txt',
+const roots=['.github/workflows/pages.yml','.gitignore','AGENTS.md','LICENSE','NOTICE','README.md','TECHNICAL.md','THIRD_PARTY_NOTICES.txt',
  'api','avatars.html','chat.html','demo','docs','events.html','index.html','licenses','package.json','pnpm-lock.yaml',
  'pnpm-workspace.yaml','public','scripts','server','src','tests','tsconfig.json','vendor','vercel.json','vite.config.ts','wall.html'];
 const paths=git(['ls-tree','-r','--name-only','-z','HEAD','--',...roots]).split('\0').filter(Boolean);

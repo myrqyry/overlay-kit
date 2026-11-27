@@ -3632,6 +3632,27 @@ function connectTwitchIrcChat(options) {
   return { channel, close };
 }
 
+// node_modules/.pnpm/@myrqyry+chatbus@file+vendor+chatbus_debug@4.4.3/node_modules/@myrqyry/chatbus/src/browser.ts
+var browserPublicPlatforms = ["twitch"];
+function supportsBrowserPublicChat(platform) {
+  return browserPublicPlatforms.some((item) => item === platform);
+}
+function requireDirect(platform) {
+  if (!supportsBrowserPublicChat(platform)) throw new Error(platform + " requires a compatible Chatbus relay for public chat");
+}
+function createBrowserChatSource() {
+  return {
+    connect({ platform = "twitch", ...options }) {
+      requireDirect(platform);
+      return connectTwitchIrcChat(options);
+    },
+    async emotes(channel, platform = "twitch") {
+      requireDirect(platform);
+      return fetchChannelEmotesDetailed(channel);
+    }
+  };
+}
+
 // server/twitch-source-identity.ts
 async function loadTwitchSourcePortrait(login, lookup = fetchTwitchUserIdentity) {
   const identity = await lookup(login);
@@ -4346,143 +4367,7 @@ function normalizeLiveChannel(value, platform = "twitch") {
   return /^[a-z0-9_-]{1,40}$/.test(text) ? text : null;
 }
 
-// server/hub.ts
-var twitchChatbusSource = {
-  connect: ({ platform: _platform, ...options }) => connectTwitchIrcChat(options),
-  emotes: (channel) => fetchChannelEmotesDetailed(channel)
-};
-var kickChatbusSource = {
-  connect(options) {
-    const controller = new AbortController();
-    let closed = false;
-    let active = null;
-    void connectKickChat({
-      channel: options.channel,
-      getEmotes: options.getEmotes,
-      emitInitialHistory: true,
-      initialHistoryLimit: 20,
-      signal: controller.signal,
-      onEvent: options.onEvent,
-      onStateChange: options.onStateChange,
-      onError: options.onError
-    }).then((connection) => {
-      if (closed) connection.close();
-      else active = connection;
-    }, (error) => {
-      if (closed || controller.signal.aborted) return;
-      options.onStateChange?.("error");
-      options.onError?.(error instanceof Error ? error : new Error("Kick connection failed"));
-    });
-    return { close() {
-      if (closed) return;
-      closed = true;
-      controller.abort();
-      active?.close();
-      active = null;
-    } };
-  },
-  async emotes(channel) {
-    const resolved = await resolveKickChannel(channel);
-    const global = fetchGlobalSevenTv();
-    const kick = resolved.channelId ? fetchKickChannelSevenTv(resolved.channelId) : Promise.resolve({ candidates: [], status: { provider: "7tv", scope: "channel", ok: true, count: 0 } });
-    const results = await Promise.all([global, kick]);
-    return {
-      emotes: mergeCandidates(results.flatMap((result) => result.candidates)),
-      complete: results.every((result) => result.status.ok)
-    };
-  }
-};
-function createYouTubeSource(credentials, connectPublic = connectYouTubeInnertubeChat) {
-  return {
-    connect(options) {
-      const controller = new AbortController();
-      let closed = false;
-      let active = null;
-      const apiKey = credentials.apiKey?.trim() || void 0;
-      const accessToken = credentials.accessToken?.trim() || void 0;
-      const authenticated = Boolean(apiKey || accessToken);
-      if (!authenticated && process.env.OVERLAY_YOUTUBE_PUBLIC === "0") {
-        queueMicrotask(() => {
-          if (closed) return;
-          options.onStateChange?.("error");
-          options.onError?.(new Error("Public YouTube chat disabled; configure an API key or OAuth token"));
-        });
-        return { close() {
-          closed = true;
-          controller.abort();
-        } };
-      }
-      const forwardEvent = (event) => {
-        if (!closed) options.onEvent(event);
-      };
-      const forwardState = (state) => {
-        if (!closed) options.onStateChange?.(state);
-      };
-      const forwardError = (error) => {
-        if (!closed) options.onError?.(error);
-      };
-      const pending3 = authenticated ? connectYouTubeChat({
-        videoId: options.channel,
-        apiKey,
-        accessToken,
-        emitInitialHistory: false,
-        signal: controller.signal,
-        onEvent: forwardEvent,
-        onStateChange: forwardState,
-        onError: forwardError
-      }) : connectPublic({
-        liveId: options.channel,
-        signal: controller.signal,
-        onEvent: forwardEvent,
-        onStateChange: forwardState,
-        onError: forwardError
-      });
-      void pending3.then((connection) => {
-        if (closed) connection.close();
-        else active = connection;
-      }, (error) => {
-        if (closed || controller.signal.aborted) return;
-        options.onStateChange?.("error");
-        options.onError?.(error instanceof Error ? error : new Error("YouTube Live Chat connection failed"));
-      });
-      return { close() {
-        if (closed) return;
-        closed = true;
-        controller.abort();
-        active?.close();
-        active = null;
-      } };
-    },
-    async emotes() {
-      return { emotes: {}, complete: true };
-    }
-  };
-}
-var youtubeChatbusSource = createYouTubeSource({
-  apiKey: process.env.OVERLAY_YOUTUBE_API_KEY,
-  accessToken: process.env.OVERLAY_YOUTUBE_ACCESS_TOKEN
-});
-var tiktokChatbusSource = {
-  connect: ({ platform: _platform, ...options }) => connectTikTokChat(options),
-  async emotes() {
-    return { emotes: {}, complete: true };
-  }
-};
-var sourcesByPlatform = {
-  twitch: twitchChatbusSource,
-  kick: kickChatbusSource,
-  youtube: youtubeChatbusSource,
-  tiktok: tiktokChatbusSource
-};
-var sourceFor = (platform) => sourcesByPlatform[platform];
-var chatbusLiveSource = {
-  connect(options) {
-    return sourceFor(options.platform ?? "twitch").connect(options);
-  },
-  emotes(channel, platform = "twitch") {
-    return sourceFor(platform).emotes(channel, platform);
-  }
-};
+// server/live-hub.ts
 function normalizeChannel(input, platform = "twitch") {
   const channel = normalizeLiveChannel(input, platform);
   if (!channel) throw new Error(
@@ -4814,6 +4699,141 @@ function createLiveMixer(source, emit, makeBadges = createTwitchBadgeCatalog, ma
   };
   return { status: aggregate, connect, addSource, removeSource, reconnectSource, disconnect, close: disconnect };
 }
+
+// server/hub.ts
+var twitchChatbusSource = createBrowserChatSource();
+var kickChatbusSource = {
+  connect(options) {
+    const controller = new AbortController();
+    let closed = false;
+    let active = null;
+    void connectKickChat({
+      channel: options.channel,
+      getEmotes: options.getEmotes,
+      emitInitialHistory: true,
+      initialHistoryLimit: 20,
+      signal: controller.signal,
+      onEvent: options.onEvent,
+      onStateChange: options.onStateChange,
+      onError: options.onError
+    }).then((connection) => {
+      if (closed) connection.close();
+      else active = connection;
+    }, (error) => {
+      if (closed || controller.signal.aborted) return;
+      options.onStateChange?.("error");
+      options.onError?.(error instanceof Error ? error : new Error("Kick connection failed"));
+    });
+    return { close() {
+      if (closed) return;
+      closed = true;
+      controller.abort();
+      active?.close();
+      active = null;
+    } };
+  },
+  async emotes(channel) {
+    const resolved = await resolveKickChannel(channel);
+    const global = fetchGlobalSevenTv();
+    const kick = resolved.channelId ? fetchKickChannelSevenTv(resolved.channelId) : Promise.resolve({ candidates: [], status: { provider: "7tv", scope: "channel", ok: true, count: 0 } });
+    const results = await Promise.all([global, kick]);
+    return {
+      emotes: mergeCandidates(results.flatMap((result) => result.candidates)),
+      complete: results.every((result) => result.status.ok)
+    };
+  }
+};
+function createYouTubeSource(credentials, connectPublic = connectYouTubeInnertubeChat) {
+  return {
+    connect(options) {
+      const controller = new AbortController();
+      let closed = false;
+      let active = null;
+      const apiKey = credentials.apiKey?.trim() || void 0;
+      const accessToken = credentials.accessToken?.trim() || void 0;
+      const authenticated = Boolean(apiKey || accessToken);
+      if (!authenticated && process.env.OVERLAY_YOUTUBE_PUBLIC === "0") {
+        queueMicrotask(() => {
+          if (closed) return;
+          options.onStateChange?.("error");
+          options.onError?.(new Error("Public YouTube chat disabled; configure an API key or OAuth token"));
+        });
+        return { close() {
+          closed = true;
+          controller.abort();
+        } };
+      }
+      const forwardEvent = (event) => {
+        if (!closed) options.onEvent(event);
+      };
+      const forwardState = (state) => {
+        if (!closed) options.onStateChange?.(state);
+      };
+      const forwardError = (error) => {
+        if (!closed) options.onError?.(error);
+      };
+      const pending3 = authenticated ? connectYouTubeChat({
+        videoId: options.channel,
+        apiKey,
+        accessToken,
+        emitInitialHistory: false,
+        signal: controller.signal,
+        onEvent: forwardEvent,
+        onStateChange: forwardState,
+        onError: forwardError
+      }) : connectPublic({
+        liveId: options.channel,
+        signal: controller.signal,
+        onEvent: forwardEvent,
+        onStateChange: forwardState,
+        onError: forwardError
+      });
+      void pending3.then((connection) => {
+        if (closed) connection.close();
+        else active = connection;
+      }, (error) => {
+        if (closed || controller.signal.aborted) return;
+        options.onStateChange?.("error");
+        options.onError?.(error instanceof Error ? error : new Error("YouTube Live Chat connection failed"));
+      });
+      return { close() {
+        if (closed) return;
+        closed = true;
+        controller.abort();
+        active?.close();
+        active = null;
+      } };
+    },
+    async emotes() {
+      return { emotes: {}, complete: true };
+    }
+  };
+}
+var youtubeChatbusSource = createYouTubeSource({
+  apiKey: process.env.OVERLAY_YOUTUBE_API_KEY,
+  accessToken: process.env.OVERLAY_YOUTUBE_ACCESS_TOKEN
+});
+var tiktokChatbusSource = {
+  connect: ({ platform: _platform, ...options }) => connectTikTokChat(options),
+  async emotes() {
+    return { emotes: {}, complete: true };
+  }
+};
+var sourcesByPlatform = {
+  twitch: twitchChatbusSource,
+  kick: kickChatbusSource,
+  youtube: youtubeChatbusSource,
+  tiktok: tiktokChatbusSource
+};
+var sourceFor = (platform) => sourcesByPlatform[platform];
+var chatbusLiveSource = {
+  connect(options) {
+    return sourceFor(options.platform ?? "twitch").connect(options);
+  },
+  emotes(channel, platform = "twitch") {
+    return sourceFor(platform).emotes(channel, platform);
+  }
+};
 
 // server/hosted-channel.ts
 function hostedChannel() {

@@ -1,6 +1,6 @@
 import {createServiceBadge} from '../src/renderers';
 
-export type AccountMode='checking'|'local'|'hosted'|'preview';
+export type AccountMode='checking'|'local'|'hosted'|'preview'|'browser';
 const providers=[
  {id:'twitch',name:'Twitch',description:'Anonymous IRC works without sign-in. A linked account enables authenticated EventSub chat in the local relay.'},
  {id:'kick',name:'Kick',description:'Live chat uses the anonymous realtime reader. Signing in links your Kick account; it does not change that chat transport.'},
@@ -30,6 +30,7 @@ export function createAccountPanel({root,notice,feedback,fetcher=fetch,navigate=
  function render(){
   notice.textContent=mode==='checking'?'Checking relay availability…':mode==='hosted'
    ?'Account sign-in is available only in the local relay. This hosted editor uses server-managed credentials where required.'
+   :mode==='browser'?'Twitch public chat connects directly. Run pnpm live for account authorization and other providers.'
    :mode==='preview'?'No live relay is available in this preview. Run pnpm dev or pnpm live to manage local accounts.'
    :loading?'Checking local account status…':failed?'Could not read local account status. Close and reopen Accounts to retry.'
    :'Manage account authorization for the local relay. Accounts belong to a platform, not an individual channel.';

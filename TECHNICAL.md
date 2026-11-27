@@ -213,6 +213,20 @@ Next: native OBS CEF stress/profile run for chat motion with bursts, long wrappi
 Vitest tests scene timing/disposal/config, renderer replacement cleanup, Chatbus normalization, safe chat DOM, nested packet validation, stacking, and event bridge. Chromium smoke tested both preview pages, visible local artwork, a separately opened empty wall source receiving an editor event, and wall motion reconfiguration, without page errors. This is **not** a live Twitch or actual OBS smoke, shader parity benchmark or streaming stress test. No existing application repositories were changed by this initial package.
 
 
+## Static browser mode
+
+`pnpm build:pages` produces `dist-pages/`, using relative paths suitable
+for GitHub Pages project sites. The explicit browser-only capability uses
+Chatbus's `./browser` entrypoint and the same transport-neutral live mixer
+as the Node relay. The normal build preserves the existing local/hosted
+server discovery. Browser mode does not advertise unavailable providers,
+send credentials, or probe localhost from a public HTTPS page. Chromium
+verification at the Pages origin (local static assets, real upstream
+network) joined Twitch and rendered an independent live chat message after
+the editor closed. Kick discovery succeeded but realtime negotiation
+was blocked by CORS. Native OBS CEF and a deployed Pages origin are separate
+verification boundaries.
+
 ## Optional Vercel hosting
 
 The public source is maintained at https://github.com/myrqyry/overlay-kit.

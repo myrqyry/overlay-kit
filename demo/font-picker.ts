@@ -6,7 +6,7 @@ import {
 interface FontCatalog {source:string;updated:string;fonts:GoogleFontFamily[]}
 let catalogPromise:Promise<FontCatalog>|null=null;
 function getCatalog():Promise<FontCatalog> {
-  if(!catalogPromise)catalogPromise=fetch('/google-fonts.json').then(async res=>{
+  if(!catalogPromise)catalogPromise=fetch(import.meta.env.BASE_URL+'google-fonts.json').then(async res=>{
     if(!res.ok)throw Error('Catalog unavailable (HTTP '+res.status+')');
     const raw:unknown=await res.json();
     if(!raw||typeof raw!=='object'||!('fonts' in raw)||

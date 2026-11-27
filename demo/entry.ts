@@ -1,8 +1,9 @@
+import {getPreferredLiveCapability,connectPreferredSource} from '../src/browser-live-client';
 import { createOverlayBridge } from '../src/bridge';
 import { createEmoteChorusDetector } from '../src/emote-chorus';
 import type { OverlayLiveEvent } from '../src/live';
 import {createSourceSubscriptions,sourceKey} from '../src/source-subscriptions';
-import { applyLiveEvent, connectLiveSource, getLiveCapability,type WireLiveStatus } from '../src/live-client';
+import { applyLiveEvent, connectLiveSource, type WireLiveStatus } from '../src/live-client';
 import {normalizeViewerChannel,normalizeViewerPlatform,readViewerSources,type ViewerSource} from '../src/channel-choice';
 import { createChatFeed, createEmoteWall } from '../src/views';
 import { createAvatarScene } from '../src/avatar-scene';
@@ -143,10 +144,10 @@ const onPreviewSources=(event:MessageEvent)=>{
   if(target&&sources.some(source=>sourceKey(source)===sourceKey(target)))hostedFeeds?.reconnect(target);
 };
 window.addEventListener('message',onPreviewSources);
-if(liveEnabled||(preview&&window.parent!==window)) void getLiveCapability().then(capability => {
+if(liveEnabled||(preview&&window.parent!==window)) void getPreferredLiveCapability().then(capability => {
   if(!capability)return;
   const params=new URLSearchParams(location.search);
-  if(capability.mode==='hosted'){
+  if(capability.mode==='hosted'||capability.mode==='browser'){
     let sources=liveEnabled?readViewerSources(params):[];
     if(liveEnabled&&!sources.length&&!params.has('source')&&!params.has('channel')){
       const platform=normalizeViewerPlatform(params.get('platform'))??capability.platform;
@@ -154,9 +155,8 @@ if(liveEnabled||(preview&&window.parent!==window)) void getLiveCapability().then
       if(channel)sources=[{platform,channel}];
     }
     const allowed=(items:readonly ViewerSource[])=>items.filter(source=>capability.platforms.includes(source.platform));
-    const sessions=createSourceSubscriptions<HostedPacket>((source,receive)=>connectLiveSource(
+    const sessions=createSourceSubscriptions<HostedPacket>((source,receive)=>connectPreferredSource(capability,source,
       value=>receive({type:'event',value}),value=>receive({type:'status',value}),value=>receive({type:'signal',value}),
-      {endpoint:capability.websocketPath,platform:source.platform,channel:source.channel},
     ),(source,packet)=>{
       const key=sourceKey(source);
       if(packet.type==='event')receiveLiveEvent(packet.value);

@@ -39,7 +39,7 @@ export function loadGoogleFont(familyName:string,doc:Document=document):boolean 
   // OBS/Chromium can have no direct external network even when the host
   // can fetch fonts. The local Chatbus relay supplies a bounded CSS/font
   // proxy; Vite-only preview falls back to Google's normal CSS endpoint.
-  sheet.href='/api/fonts/css?family='+encodeURIComponent(normalizeGoogleFontFamily(familyName));
+  sheet.href=import.meta.env.VITE_OVERLAY_BROWSER_ONLY==='1'?url:'/api/fonts/css?family='+encodeURIComponent(normalizeGoogleFontFamily(familyName));
   sheet.onerror=()=>{if(sheet.href!==url)sheet.href=url};
   if(previous)previous.replaceWith(sheet);
   else doc.head.append(sheet);

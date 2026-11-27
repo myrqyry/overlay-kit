@@ -1,5 +1,6 @@
+import {getPreferredLiveCapability,connectPreferredSource} from '../src/browser-live-client';
 import { createOverlayBridge } from '../src/bridge';
-import { getLiveCapability, connectLiveSource, type WireLiveStatus } from '../src/live-client';
+import { connectLiveSource, type WireLiveStatus } from '../src/live-client';
 import {createSourceSubscriptions,sourceKey} from '../src/source-subscriptions';
 import {createLiveSourceChips,type SourceAction} from './live-source-chips';
 import {normalizeViewerChannel,normalizeViewerPlatform,restoreHostedViewerSources,withViewerSources,type ViewerPlatform,type ViewerSource} from '../src/channel-choice';
@@ -91,6 +92,7 @@ hydrateMingcuteIcons();
 let liveFeed: {dispose():void} | null = null;
 let activeLiveSources:ViewerSource[]=[];
 let hostedLive=false;
+let directBrowserLive=false;
 let liveCapabilityKnown=false;
 let hostedSession:ReturnType<typeof createSourceSubscriptions<WireLiveStatus>>|null=null;
 const sourceStatuses=new Map<string,WireLiveStatus>();
@@ -174,7 +176,7 @@ function renderLive(status:WireLiveStatus) {
           +' · Emotes: '+(detail?.emotes??'idle')+' · Badges: '+(detail?.badges??'idle')
           +(detail?.error?' · '+detail.error:'');
       }).join('; ')
-    : 'Disconnected. Add a live-chat source.';
+    : directBrowserLive?'Browser-direct Twitch chat. Other providers: run pnpm live locally.':'Disconnected. Add a live-chat source.';
 }
 async function commandLive(action: 'connect'|SourceAction,target?:ViewerSource) {
   const platform=target?.platform??normalizeViewerPlatform(livePlatform.value)??'twitch';
@@ -257,7 +259,7 @@ livePlatform.addEventListener('change',()=>{
   if(hostedLive){selectedHostedPlatform=platform;selectedHostedChannel=normalized;syncHostedControls();}
   else syncLocalControls();
 });
-void getLiveCapability().then(async capability=>{
+void getPreferredLiveCapability().then(async capability=>{
   liveCapabilityKnown=true;
   accountPanel.setMode(capability?.mode??'preview');
   const oauthResult=new URLSearchParams(location.search).get('oauth');
@@ -277,8 +279,10 @@ void getLiveCapability().then(async capability=>{
   for(const option of Array.from(livePlatform.options))option.disabled=!supportedLivePlatforms.includes(option.value as ViewerPlatform);
   if(!supportedLivePlatforms.includes(livePlatform.value as ViewerPlatform))livePlatform.value=capability.platform;
   platformPicker.sync();
-  if(capability.mode==='hosted'){
+  if(capability.mode==='hosted'||capability.mode==='browser'){
     hostedLive=true;
+    directBrowserLive=capability.mode==='browser';
+    liveStatus.textContent=directBrowserLive?'Browser-direct Twitch chat. Other providers: run pnpm live locally.':'Disconnected. Add a live-chat source.';
 
     const defaultChannel=normalizeViewerChannel(capability.channel,capability.platform);
     selectedHostedSources=restoreHostedViewerSources(
@@ -297,9 +301,7 @@ void getLiveCapability().then(async capability=>{
     platformPicker.sync();
     renderSourceChips(selectedHostedSources);
     hostedSession=createSourceSubscriptions<WireLiveStatus>(
-      (source,receive)=>connectLiveSource(recordSampleAssets,receive,undefined,{
-        endpoint:capability.websocketPath,platform:source.platform,channel:source.channel,
-      }),
+      (source,receive)=>connectPreferredSource(capability,source,recordSampleAssets,receive),
       (source,status)=>{
         const detail=status.sources?.find(item=>item.platform===source.platform&&item.channel===source.channel)??status;
         sourceStatuses.set(sourceKey(source),detail);

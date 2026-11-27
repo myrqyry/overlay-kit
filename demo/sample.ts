@@ -21,7 +21,7 @@ const previewPaints:readonly DisplayNamePaint[]=[
 
 export function sampleMessage(index: number, profiles:readonly PreviewAssetProfile[]=[]): DisplayMessage {
   const line = lines[index % lines.length]!;
-  const path = (name: string) => '/assets/' + name + '.svg';
+  const path = (name: string) => import.meta.env.BASE_URL + 'assets/' + name + '.svg';
   const platform=['twitch','youtube','kick','twitch'][index%4]!;
   // Prefer complete real cosmetics when available, retaining badge+paint
   // relationships within the source profile. Names/text remain fictional.

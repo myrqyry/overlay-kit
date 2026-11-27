@@ -83,6 +83,25 @@ pnpm build
 
 The development host defaults to port 5173. The standalone host defaults to 5219 and binds to loopback. See the [technical reference](TECHNICAL.md) for alternate ports, OAuth setup, hosted deployment and architecture.
 
+## Browser-only hosting
+
+The public source supports a free static GitHub Pages build. Browser mode uses
+the pinned Chatbus browser entrypoint and connects directly to Twitch IRC,
+with existing emote, badge and cosmetic enrichment where provider APIs permit.
+The editor and independently opened OBS source pages do not need our server.
+
+```sh
+pnpm build:pages
+```
+
+Deploy only `dist-pages/`. The build uses relative project-site assets.
+Twitch public chat is the only direct provider currently advertised. Kick
+realtime negotiation is blocked by CORS from the Pages origin; public YouTube
+and TikTok require Node. For those providers or account authorization, use
+the local `pnpm live` editor instead. No browser security checks are bypassed,
+and the public frontend does not attempt to reach an arbitrary remote or
+loopback relay. Provider availability can change.
+
 ## Platform support
 
 Overlay Kit combines sources in one normalized chat stream. Provider capabilities differ; connecting successfully does not imply full moderation, badge or channel-event coverage.

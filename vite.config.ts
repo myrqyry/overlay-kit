@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 
 const here = (name: string) => fileURLToPath(new URL(name, import.meta.url));
 export default defineConfig({
+  base: process.env.VITE_OVERLAY_BROWSER_ONLY==='1' ? './' : '/',
   esbuild: { legalComments: 'inline' },
   build: {
     outDir: 'dist-demo',

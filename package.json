@@ -13,6 +13,7 @@
     "art:install": "node scripts/install-kick-art.mjs",
     "fonts:update": "node scripts/update-google-fonts.mjs",
     "typecheck": "tsc --noEmit",
+    "build:pages": "pnpm licenses:check && tsc --noEmit && node scripts/build-pages.mjs",
     "build": "pnpm licenses:check && tsc --noEmit && node scripts/build-hosted-api.mjs && vite build",
     "dev": "tsx server/dev.ts",
     "live": "pnpm build && tsx server/start.ts",

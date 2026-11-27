@@ -16,9 +16,9 @@ describe('distribution attribution',()=>{
  it('links original project and legal notices in the editor only',()=>{
   const editor=new DOMParser().parseFromString(read('index.html'),'text/html');
   expect(editor.querySelector('a.workbench-brand')?.getAttribute('href')).toBe('https://github.com/myrqyry/overlay-kit');
-  expect(editor.querySelector('#project-attribution a[href="/license.txt"]')).not.toBeNull();
-  expect(editor.querySelector('#project-attribution a[href="/notice.txt"]')).not.toBeNull();
-  expect(editor.querySelector('#project-attribution a[href="/third-party-notices.txt"]')).not.toBeNull();
+  expect(editor.querySelector('#project-attribution a[href="./license.txt"]')).not.toBeNull();
+  expect(editor.querySelector('#project-attribution a[href="./notice.txt"]')).not.toBeNull();
+  expect(editor.querySelector('#project-attribution a[href="./third-party-notices.txt"]')).not.toBeNull();
   for(const file of ['wall.html','chat.html','avatars.html','events.html'])
    expect(read(file)).not.toContain('project-attribution');
  });
