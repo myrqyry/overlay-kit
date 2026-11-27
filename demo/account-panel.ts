@@ -30,7 +30,7 @@ export function createAccountPanel({root,notice,feedback,fetcher=fetch,navigate=
  });
  function render(){
   notice.textContent=mode==='checking'?'Checking relay availability…':mode==='hosted'
-   ?'Account sign-in is available only in the local relay. This hosted editor uses server-managed credentials where required.'
+   ?'Account sign-in is available only in the local relay. This hosted editor connects Twitch and Kick directly, and uses the relay for YouTube and TikTok.'
    :mode==='browser'?'Twitch and Kick connect anonymously. YouTube has an optional API-key preview. Run pnpm live for anonymous YouTube, TikTok and account authorization.'
    :mode==='preview'?'No live relay is available in this preview. Run pnpm dev or pnpm live to manage local accounts.'
    :loading?'Checking local account status…':failed?'Could not read local account status. Close and reopen Accounts to retry.'

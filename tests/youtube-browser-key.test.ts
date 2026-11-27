@@ -21,6 +21,17 @@ describe('browser-only YouTube credentials',()=>{
   expect(root.querySelector('input')?.value).toBe('');
   expect(root.innerHTML).not.toContain(fixture);
  });
+ it('shares live packets across all four providers, without accepting unselected rooms',()=>{
+  const registry=createParentPreviewPackets(window,'https://example.test');
+  for(const platform of ['twitch','kick','youtube','tiktok'] as const){
+   const source={platform,channel:'fixture'},receive=vi.fn();
+   const handle=registry.open(source,receive);
+   const packet={type:'status',value:{state:'connected'}};
+   registry.receive(new MessageEvent('message',{source:window,origin:'https://example.test',data:{type:'overlay-kit-preview-live-packet',source,packet}}));
+   expect(receive).toHaveBeenCalledExactlyOnceWith(packet);
+   handle.dispose();
+  }
+ });
  it('only forwards live preview packets from the owning same-origin parent to active sources',()=>{
   const source={platform:'youtube' as const,channel:'jfKfPfyJRdk'};
   const receive=vi.fn();

@@ -168,7 +168,7 @@ if(liveEnabled||(preview&&window.parent!==window)) void getPreferredLiveCapabili
     }
     const allowed=(items:readonly ViewerSource[])=>items.filter(source=>capability.platforms.includes(source.platform));
     const sessions=createSourceSubscriptions<HostedPacket>((source,receive)=>{
-      if(directBrowserMode&&preview&&window.parent!==window&&source.platform==='youtube')return parentPackets.open(source,receive);
+      if(preview&&window.parent!==window)return parentPackets.open(source,receive);
       return connectPreferredSource(capability,source,
       value=>receive({type:'event',value}),value=>receive({type:'status',value}),value=>receive({type:'signal',value}),
     );},(source,packet)=>{

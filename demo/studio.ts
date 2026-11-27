@@ -178,7 +178,7 @@ function renderLive(status:WireLiveStatus) {
           +' · Emotes: '+(detail?.emotes??'idle')+' · Badges: '+(detail?.badges??'idle')
           +(detail?.error?' · '+detail.error:'');
       }).join('; ')
-    : directBrowserLive?'Browser-direct Twitch and Kick. YouTube: optional API key in Accounts. TikTok: local relay.':'Disconnected. Add a live-chat source.';
+    : directBrowserLive?'Browser-direct Twitch and Kick. YouTube: optional API key in Accounts. TikTok: local relay.':'Twitch and Kick connect directly; YouTube and TikTok use the hosted relay.';
 }
 async function commandLive(action: 'connect'|SourceAction,target?:ViewerSource) {
   const platform=target?.platform??normalizeViewerPlatform(livePlatform.value)??'twitch';
@@ -284,7 +284,7 @@ void getPreferredLiveCapability().then(async capability=>{
   if(capability.mode==='hosted'||capability.mode==='browser'){
     hostedLive=true;
     directBrowserLive=capability.mode==='browser';
-    liveStatus.textContent=directBrowserLive?'Browser-direct Twitch and Kick. YouTube: optional API key in Accounts. TikTok: local relay.':'Disconnected. Add a live-chat source.';
+    liveStatus.textContent=directBrowserLive?'Browser-direct Twitch and Kick. YouTube: optional API key in Accounts. TikTok: local relay.':'Twitch and Kick connect directly; YouTube and TikTok use the hosted relay.';
 
     const defaultChannel=normalizeViewerChannel(capability.channel,capability.platform);
     selectedHostedSources=restoreHostedViewerSources(
@@ -729,7 +729,7 @@ function rebuildPresets(selected = 'custom-current') {
 }
 const previewFrames:Record<OverlayEditorView,HTMLIFrameElement>={wall,chat,avatars,events};
 function publishBrowserPreviewPacket(source:ViewerSource,packet:BrowserPreviewPacket,frame?:HTMLIFrameElement){
-  if(!directBrowserLive||source.platform!=='youtube')return;
+  if(!hostedLive)return;
   for(const target of frame?[frame]:Object.values(previewFrames)){
     if(target.src!=='about:blank')target.contentWindow?.postMessage({type:'overlay-kit-preview-live-packet',source,packet},location.origin);
   }

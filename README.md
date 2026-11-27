@@ -102,6 +102,17 @@ optional official Data API browser preview; its anonymous web reader and
 TikTok still require the local `pnpm live` editor. No browser security
 checks are bypassed. Provider availability can change.
 
+### Hybrid hosted deployment
+
+The normal Vercel build serves the same frontend and connects Twitch and
+Kick directly from the user's browser. YouTube and TikTok retain the
+same-origin hosted relay, including anonymous YouTube. All enabled editor
+previews share one normalized chat connection per selected channel rather
+than opening their own provider connections, badge catalogs and cosmetic
+lookups. Standalone OBS sources remain independent. Local self-hosted mode
+keeps its existing relay and OAuth behavior. GitHub Pages remains available
+for entirely static hosting.
+
 ### Optional YouTube browser preview (API key required)
 
 In Google Cloud, enable YouTube Data API v3 and create a dedicated API key

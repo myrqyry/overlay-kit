@@ -4,8 +4,8 @@ import type {WireLiveStatus} from './live-client';
 import type {ViewerSource} from './channel-choice';
 import {sourceKey} from './source-subscriptions';
 export type BrowserPreviewPacket={type:'event';value:OverlayLiveEvent}|{type:'status';value:WireLiveStatus}|{type:'signal';value:SocialSignalV1};
-/** Only YouTube's quota-consuming API is multiplexed through the owner
- * editor. Ordinary source windows remain independent. No key is forwarded. */
+/** All hosted and direct connections share the owning editor's normalized
+ * packets with previews. Standalone sources stay independent. No credentials. */
 export function createParentPreviewPackets(parent:Window,origin:string){
  const receivers=new Map<string,(packet:BrowserPreviewPacket)=>void>();
  return {
@@ -16,7 +16,7 @@ export function createParentPreviewPackets(parent:Window,origin:string){
   receive(event:MessageEvent){
    if(event.source!==parent||event.origin!==origin||event.data?.type!=='overlay-kit-preview-live-packet')return;
    const {source,packet}=event.data;
-   if(source?.platform!=='youtube'||typeof source.channel!=='string'||!packet?.value||!['event','status','signal'].includes(packet.type))return;
+   if(!source||!['twitch','kick','youtube','tiktok'].includes(source.platform)||typeof source.channel!=='string'||!packet?.value||!['event','status','signal'].includes(packet.type))return;
    receivers.get(sourceKey(source))?.(packet);
   },
  };

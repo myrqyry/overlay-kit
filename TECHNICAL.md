@@ -233,7 +233,7 @@ with a caller-owned restricted API key, sent only in the Google API header.
 The key is saved separately from editor settings in origin-local storage on
 explicit user action. The browser's account panel and youtube-setup.html
 provide masked input and a forget action. Source URLs and presets carry
-only video IDs, never keys. One reader per editor/video forwards normalized
+only video IDs, never keys. One reader per editor/channel forwards normalized
 event/status/signal packets to its owning same-origin previews; independent
 sources each retain their own reader. The ten-second minimum polling
 interval, terminal quota/auth failure and cancellation tests protect user
@@ -242,6 +242,14 @@ Live credentialed access has not been verified; the browser smoke uses
 explicit Google API fixtures. The existing Node public reader is unchanged.
 
 ## Optional Vercel hosting
+
+Hybrid routing: hosted Twitch and Kick use the browser transport, YouTube
+and TikTok use the existing same-origin WebSocket relay. The editor owns
+one reader per selected source and forwards normalized packets to its
+enabled same-origin preview frames; the previews no longer open redundant
+connections or enrichment pipelines. Independent source URLs remain
+independent of the editor. Browser HTTP caching and existing Chatbus
+metadata caches remain in use; no third-party asset mirroring is added.
 
 The public source is maintained at https://github.com/myrqyry/overlay-kit.
 The following describes the optional hosted architecture, not a promise of
@@ -283,7 +291,7 @@ does not redirect or disconnect another open OBS/browser source. Public room
 ownership remains server-side and listener-scoped.
 
 Removing the last hosted source now generates an explicit `live=0` URL
-for every preview and generated browser source, closes the editor's own
+for each independent browser source, closes the editor's own
 room subscriptions, and saves an empty source list. Reloading the editor
 does not restore the default channel after that explicit disconnect.
 The default remains available for a first-time visitor with no saved

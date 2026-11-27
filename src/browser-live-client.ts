@@ -55,8 +55,13 @@ export function connectBrowserLiveSource(
  }
  return {dispose};
 }
+/** Preserve the local authenticated relay; on a hosted deployment only
+ * the providers requiring a Node transport use the same-origin relay. */
+export function preferredSourceTransport(capability:PreferredLiveCapability,platform:ViewerPlatform):'browser'|'relay'{
+ return capability.mode==='browser'||(capability.mode==='hosted'&&supportsBrowserPublicChat(platform))?'browser':'relay';
+}
 export function connectPreferredSource(capability:PreferredLiveCapability,selection:ViewerSource,onEvent:(event:OverlayLiveEvent)=>void,onStatus?: (status:WireLiveStatus)=>void,onSignal?:(signal:SocialSignalV1)=>void){
- return capability.mode==='browser'
+ return preferredSourceTransport(capability,selection.platform)==='browser'
   ?connectBrowserLiveSource(onEvent,onStatus,onSignal,selection)
-  :connectLiveSource(onEvent,onStatus,onSignal,{endpoint:capability.websocketPath,platform:selection.platform,channel:selection.channel});
+  :connectLiveSource(onEvent,onStatus,onSignal,{endpoint:capability.mode==='browser'?undefined:capability.websocketPath,platform:selection.platform,channel:selection.channel});
 }

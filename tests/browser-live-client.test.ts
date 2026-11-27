@@ -1,6 +1,6 @@
 import {afterEach,describe,expect,it,vi} from 'vitest';
 import {normalizeTwitchIrcFrame,parseTwitchIrcLine,normalizeKickEvent} from '@myrqyry/chatbus';
-import {connectBrowserLiveSource,getPreferredLiveCapability} from '../src/browser-live-client';
+import {connectBrowserLiveSource,getPreferredLiveCapability,preferredSourceTransport} from '../src/browser-live-client';
 import type {LiveSource} from '../server/hub';
 afterEach(()=>vi.unstubAllGlobals());
 describe('browser-only Overlay Kit',()=>{
@@ -16,6 +16,12 @@ describe('browser-only Overlay Kit',()=>{
   expect(status).toHaveBeenCalledWith(expect.objectContaining({state:'error',error:expect.stringMatching(/API key/i)}));
   expect(fetcher).not.toHaveBeenCalled();
   handle.dispose();
+ });
+ it('uses local providers first in the hosted build, retaining its relay for Node-only providers',()=>{
+  const capability={mode:'hosted',platform:'twitch',platforms:['twitch','kick','youtube','tiktok'],channel:null,websocketPath:'/api/live'} as const;
+  for(const platform of ['twitch','kick'] as const)expect(preferredSourceTransport({...capability,platforms:[...capability.platforms]},platform)).toBe('browser');
+  for(const platform of ['youtube','tiktok'] as const)expect(preferredSourceTransport({...capability,platforms:[...capability.platforms]},platform)).toBe('relay');
+  expect(preferredSourceTransport({mode:'local',platform:'twitch',platforms:['twitch'],channel:null,websocketPath:'/live'},'twitch')).toBe('relay');
  });
  it('keeps the existing server discovery in normal builds',async()=>{
   vi.stubGlobal('fetch',vi.fn(async()=>Response.json({service:'overlay-kit-live',mode:'local',platforms:['twitch','kick','youtube']})));
