@@ -28,7 +28,7 @@ try{
  const editor=await ctx.newPage();track(editor);
  await editor.goto(origin+prefix);
  await editor.waitForFunction(()=>document.querySelector('#live-status')?.textContent?.includes('Browser-direct'));
- assert.equal(await editor.locator('#live-platform option:disabled').count(),2);
+ assert.equal(await editor.locator('#live-platform option:disabled').count(),1);
  for(const id of ['wall-preview','chat-preview'])await editor.locator('#'+id).evaluate(f=>{if(!f.src.startsWith('https://myrqyry.github.io/overlay-kit/'))throw Error('bad preview URL '+f.src)});
  const legal=await editor.locator('#project-attribution a[href*="license.txt"]').getAttribute('href');console.log('legal link:',legal);
  const link=await editor.locator('#project-attribution a[href*="license.txt"]').evaluate(a=>a.href);

@@ -1,3 +1,4 @@
+import {readBrowserYouTubeApiKey} from './youtube-browser-key';
 import {browserPublicPlatforms,createBrowserChatSource,supportsBrowserPublicChat} from '@myrqyry/chatbus/browser';
 import type {SocialSignalV1} from '@myrqyry/chatbus';
 import {createLiveMixer,type LiveSource} from '../server/live-hub';
@@ -16,7 +17,7 @@ export type PreferredLiveCapability=LiveCapability|BrowserCapability;
 /** Explicit static build: no same-origin API expected. Existing local and
  * hosted builds keep their original server discovery and behavior. */
 export async function getPreferredLiveCapability(browserOnly=import.meta.env.VITE_OVERLAY_BROWSER_ONLY==='1'):Promise<PreferredLiveCapability|null>{
- if(browserOnly)return {mode:'browser',platform:'twitch',platforms:[...browserPublicPlatforms],channel:null};
+ if(browserOnly)return {mode:'browser',platform:'twitch',platforms:[...browserPublicPlatforms,'youtube'],channel:null};
  return getLiveCapability();
 }
 export function connectBrowserLiveSource(
@@ -26,8 +27,13 @@ export function connectBrowserLiveSource(
  selection:ViewerSource,
  source?:LiveSource,
 ){
+ const youtubeApiKey=selection.platform==='youtube'?readBrowserYouTubeApiKey():undefined;
+ if(selection.platform==='youtube'&&!source&&!youtubeApiKey){
+  onStatus?.({platform:'youtube',channel:selection.channel,state:'error',emotes:'idle',badges:'idle',error:'YouTube needs your restricted Data API key. Open Accounts or youtube-setup.html in this browser.'});
+  return {dispose(){}};
+ }
  let disposed=false;
- const mixer=createLiveMixer(source??createBrowserChatSource(),packet=>{
+ const mixer=createLiveMixer(source??createBrowserChatSource({youtubeApiKey}),packet=>{
   if(disposed)return;
   if(packet.type==='event')onEvent(packet.event);
   else if(packet.type==='signal')onSignal?.(packet.signal);
@@ -39,7 +45,7 @@ export function connectBrowserLiveSource(
  source?undefined:createUserCosmeticsResolver,source?()=>createKickBadgeCatalog(async()=>({})):undefined,
  source?undefined:loadTwitchSourcePortrait,source?undefined:fetchKickUserAvatar,source?undefined:fetchTwitchUserAvatar);
  const dispose=()=>{if(disposed)return;disposed=true;mixer.close();};
- if(!supportsBrowserPublicChat(selection.platform)){
+ if(selection.platform!=='youtube'&&!supportsBrowserPublicChat(selection.platform)){
   onStatus?.({platform:selection.platform,channel:selection.channel,state:'error',emotes:'idle',badges:'idle',error:'This provider requires a local relay'});
   return {dispose};
  }

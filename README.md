@@ -97,11 +97,32 @@ pnpm build:pages
 Deploy only `dist-pages/`. The build uses relative project-site assets.
 Twitch and Kick public chat connect directly. Kick uses the public Pusher
 transport descriptor refreshed by Chatbus's GitHub Pages publisher; its
-Centrifugo negotiation remains Node-only because of CORS. Public YouTube
-and TikTok require Node. For those providers or account authorization, use
-the local `pnpm live` editor instead. No browser security checks are bypassed,
-and the public frontend does not attempt to reach an arbitrary remote or
-loopback relay. Provider availability can change.
+Centrifugo negotiation remains Node-only because of CORS. YouTube has an
+optional official Data API browser preview; its anonymous web reader and
+TikTok still require the local `pnpm live` editor. No browser security
+checks are bypassed. Provider availability can change.
+
+### Optional YouTube browser preview (API key required)
+
+In Google Cloud, enable YouTube Data API v3 and create a dedicated API key
+restricted to that API and the website `https://myrqyry.github.io/*`.
+In the Pages editor, open Accounts → YouTube and save the restricted key,
+then add the live video URL or ID. The key is stored only on explicit request
+in that browser profile and is sent to Google in an API header, not in
+overlay URLs, presets, exports, or our servers. It is browser-visible; never
+enter unrestricted keys, OAuth tokens or client secrets.
+
+OBS may have its own browser profile: temporarily load
+[youtube-setup.html](https://myrqyry.github.io/overlay-kit/youtube-setup.html)
+in the hidden source, use Interact to save the key, then restore its normal
+overlay URL. Forgetting the key stops active YouTube readers in that profile.
+The editor shares one reader per selected video among its previews.
+Independent browser sources consume their own API quota; polling is no faster
+than ten seconds or Google's requested interval. Quota and API restrictions
+apply. Use the local relay if you need anonymous public YouTube chat.
+The browser integration is fixture-tested; real credentialed YouTube chat
+and OBS CEF storage persistence are not yet verified.
+
 
 ## Platform support
 
@@ -111,7 +132,7 @@ Overlay Kit combines sources in one normalized chat stream. Provider capabilitie
 | --- | --- | --- |
 | Twitch | Anonymous IRC; optional local authenticated EventSub | Native emotes and supported cosmetics; richer events depend on authorization. |
 | Kick | Public web realtime | Native emotes and supported badges; unofficial transport, not the official chat API. |
-| YouTube | Official Live Chat API with server credentials, or optional public reader | Public reader uses undocumented endpoints and has reduced event coverage. |
+| YouTube | Official Live Chat API with server credentials or optional browser key; Node public reader | Public reader uses undocumented endpoints and has reduced event coverage. |
 | TikTok | Optional server-side public LIVE connector | Unofficial signing service; native TikTok emote and badge art is not implemented. |
 
 BTTV, FFZ and 7TV cosmetics are resolved through Chatbus where available. Some badge/identity lookups use third-party services. Unofficial providers may change or become unavailable; failures should not be mistaken for successful connections.

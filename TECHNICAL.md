@@ -41,7 +41,7 @@ Hosts can explicitly disable it with `OVERLAY_HOSTED_TIKTOK=0`.
 See [TikTok multiplatform integration](docs/tiktok-multiplatform.md)
 for live receipts, configuration, and deployment boundaries.
 
-You can override the listening port: `OVERLAY_PORT=5220 pnpm live`. YouTube Live Chat accepts public video IDs/URLs without credentials through the Node-only unofficial reader. Set `OVERLAY_YOUTUBE_API_KEY` or `OVERLAY_YOUTUBE_ACCESS_TOKEN` to use the official API instead; credentials are never placed in browser-source URLs or localStorage. Set `OVERLAY_YOUTUBE_PUBLIC=0` to disable credential-free fallback. The unofficial reader is not guaranteed to return moderation and membership events with the same coverage as the official API. If running under OBS on the same workstation, point OBS browser sources at this loopback host; actual OBS CEF behavior is **not yet independently verified**.
+You can override the listening port: `OVERLAY_PORT=5220 pnpm live`. YouTube Live Chat accepts public video IDs/URLs without credentials through the Node-only unofficial reader. Set `OVERLAY_YOUTUBE_API_KEY` or `OVERLAY_YOUTUBE_ACCESS_TOKEN` to use the official API instead; server credentials are never placed in browser-source URLs or localStorage. Set `OVERLAY_YOUTUBE_PUBLIC=0` to disable credential-free fallback. The unofficial reader is not guaranteed to return moderation and membership events with the same coverage as the official API. If running under OBS on the same workstation, point OBS browser sources at this loopback host; actual OBS CEF behavior is **not yet independently verified**.
 
 ## Implemented
 
@@ -219,8 +219,7 @@ Vitest tests scene timing/disposal/config, renderer replacement cleanup, Chatbus
 for GitHub Pages project sites. The explicit browser-only capability uses
 Chatbus's `./browser` entrypoint and the same transport-neutral live mixer
 as the Node relay. The normal build preserves the existing local/hosted
-server discovery. Browser mode does not advertise unavailable providers,
-send credentials, or probe localhost from a public HTTPS page. Chromium
+server discovery. Browser mode never probes localhost from a public HTTPS page, and never shares provider credentials in source URLs. Chromium
 verification at the Pages origin (local static assets, real upstream
 network) joined Twitch and rendered an independent live chat message after
 the editor closed. Kick discovery and direct Pusher public chat worked with a provider-issued
@@ -228,6 +227,19 @@ public descriptor; the normal realtime negotiation remains CORS-blocked.
 Chatbus refreshes its static metadata through scheduled Pages builds, not a
 chat relay. Native emotes and 7TV use existing browser provider APIs. Native OBS CEF and a deployed Pages origin are separate
 verification boundaries.
+
+The optional browser YouTube path uses the existing official Chatbus connector
+with a caller-owned restricted API key, sent only in the Google API header.
+The key is saved separately from editor settings in origin-local storage on
+explicit user action. The browser's account panel and youtube-setup.html
+provide masked input and a forget action. Source URLs and presets carry
+only video IDs, never keys. One reader per editor/video forwards normalized
+event/status/signal packets to its owning same-origin previews; independent
+sources each retain their own reader. The ten-second minimum polling
+interval, terminal quota/auth failure and cancellation tests protect user
+quota. Public YouTube web endpoints remain blocked by CORS from Pages.
+Live credentialed access has not been verified; the browser smoke uses
+explicit Google API fixtures. The existing Node public reader is unchanged.
 
 ## Optional Vercel hosting
 

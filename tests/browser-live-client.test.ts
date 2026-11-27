@@ -6,8 +6,16 @@ afterEach(()=>vi.unstubAllGlobals());
 describe('browser-only Overlay Kit',()=>{
  it('uses explicit static mode without contacting a nonexistent relay',async()=>{
   const fetcher=vi.fn();vi.stubGlobal('fetch',fetcher);
-  expect(await getPreferredLiveCapability(true)).toEqual({mode:'browser',platform:'twitch',platforms:['twitch','kick'],channel:null});
+  expect(await getPreferredLiveCapability(true)).toEqual({mode:'browser',platform:'twitch',platforms:['twitch','kick','youtube'],channel:null});
   expect(fetcher).not.toHaveBeenCalled();
+ });
+ it('does not contact YouTube or any relay without an explicitly configured browser key',()=>{
+  const fetcher=vi.fn();vi.stubGlobal('fetch',fetcher);
+  const status=vi.fn();
+  const handle=connectBrowserLiveSource(vi.fn(),status,undefined,{platform:'youtube',channel:'jfKfPfyJRdk'});
+  expect(status).toHaveBeenCalledWith(expect.objectContaining({state:'error',error:expect.stringMatching(/API key/i)}));
+  expect(fetcher).not.toHaveBeenCalled();
+  handle.dispose();
  });
  it('keeps the existing server discovery in normal builds',async()=>{
   vi.stubGlobal('fetch',vi.fn(async()=>Response.json({service:'overlay-kit-live',mode:'local',platforms:['twitch','kick','youtube']})));

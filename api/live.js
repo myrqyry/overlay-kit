@@ -2701,12 +2701,16 @@ var credentialsFor = (options) => {
   if (!apiKey && !accessToken) {
     throw new Error("YouTube chat requires an API key or OAuth access token");
   }
-  return { apiKey, accessToken };
+  return { apiKey, accessToken, apiKeyHeader: options.apiKeyHeader === true };
 };
 var request = async (path, params, credentials, signal) => {
-  if (credentials.apiKey) params.set("key", credentials.apiKey);
-  const headers = credentials.accessToken ? { Authorization: `Bearer ${credentials.accessToken}` } : void 0;
-  return fetchWithTimeout(`${API_BASE}${path}?${params.toString()}`, { headers, signal }, 1e4, 0);
+  const headers = {};
+  if (credentials.apiKey) {
+    if (credentials.apiKeyHeader) headers["X-Goog-Api-Key"] = credentials.apiKey;
+    else params.set("key", credentials.apiKey);
+  }
+  if (credentials.accessToken) headers.Authorization = "Bearer " + credentials.accessToken;
+  return fetchWithTimeout(`${API_BASE}${path}?${params.toString()}`, { headers, signal, credentials: "omit", redirect: "error" }, 1e4, 0);
 };
 var YouTubeApiError = class extends Error {
   status;
@@ -2751,7 +2755,12 @@ var TERMINAL_LIVE_CHAT_REASONS = /* @__PURE__ */ new Set([
   "forbidden",
   "liveChatDisabled",
   "liveChatEnded",
-  "liveChatNotFound"
+  "liveChatNotFound",
+  "quotaExceeded",
+  "dailyLimitExceeded",
+  "keyInvalid",
+  "accessNotConfigured",
+  "ipRefererBlocked"
 ]);
 async function resolveYouTubeLiveChat(videoId, options) {
   const normalizedVideoId = videoId.trim();
@@ -2803,6 +2812,7 @@ async function connectYouTubeChat(options) {
     channelId: options.channelId,
     channelName: options.channelName
   } : await resolveYouTubeLiveChat(options.videoId, options);
+  if (options.signal?.aborted) throw new DOMException("The operation was aborted.", "AbortError");
   const liveChat = {
     ...resolved,
     channelId: options.channelId ?? resolved.channelId,
@@ -2895,13 +2905,14 @@ async function connectYouTubeChat(options) {
           emitOffline(payload.offlineAt);
           break;
         }
-        const pollMs = Math.max(MIN_POLL_MS, payload.pollingIntervalMillis ?? DEFAULT_POLL_MS);
+        const pollMs = Math.max(MIN_POLL_MS, Number.isFinite(options.minPollMs) ? options.minPollMs : 0, payload.pollingIntervalMillis ?? DEFAULT_POLL_MS);
         await waitFor(pollMs, controller.signal);
       } catch (error) {
         if (controller.signal.aborted || isAbort(error)) break;
         const resolvedError = error instanceof Error ? error : new Error("YouTube chat connection failed");
+        if (credentials.apiKey && resolvedError.message.includes(credentials.apiKey)) resolvedError.message = resolvedError.message.replaceAll(credentials.apiKey, "[redacted]");
         options.onError?.(resolvedError);
-        if (error instanceof YouTubeApiError && error.reason && TERMINAL_LIVE_CHAT_REASONS.has(error.reason)) {
+        if (error instanceof YouTubeApiError && (error.reason && TERMINAL_LIVE_CHAT_REASONS.has(error.reason) || [400, 401, 403, 404].includes(error.status) && error.reason !== "rateLimitExceeded" && error.reason !== "userRateLimitExceeded")) {
           if (error.reason === "liveChatEnded") {
             options.onEvent({
               id: `youtube-chat-ended:${liveChat.liveChatId}`,
@@ -2918,8 +2929,8 @@ async function connectYouTubeChat(options) {
         }
         connected = false;
         options.onStateChange?.("reconnecting");
-        const backoffMs = Math.min(1e3 * 2 ** reconnectAttempt++, MAX_RECONNECT_MS);
-        const retryDelay = error instanceof YouTubeApiError && (error.status === 429 || error.status === 503) ? error.retryAfterMs : void 0;
+        const backoffMs = Math.max(Number.isFinite(options.minPollMs) ? options.minPollMs : 0, Math.min(1e3 * 2 ** reconnectAttempt++, MAX_RECONNECT_MS));
+        const retryDelay = error instanceof YouTubeApiError && (error.status === 429 || error.status === 503 || error.status === 403) ? error.retryAfterMs : void 0;
         const delay = retryDelay === void 0 ? backoffMs : Math.max(backoffMs, retryDelay);
         try {
           await waitFor(delay, controller.signal);
@@ -3678,9 +3689,17 @@ function requireDirect(platform) {
   if (!supportsBrowserPublicChat(platform)) throw new Error(platform + " requires a compatible Chatbus relay for public chat");
 }
 function createBrowserChatSource(config = {}) {
+  const youtubeKey = config.youtubeApiKey?.trim();
+  const requireAvailable = (platform) => {
+    if (platform === "youtube") {
+      if (!youtubeKey) throw Error("YouTube requires your own Data API key for browser chat");
+      return;
+    }
+    requireDirect(platform);
+  };
   return {
     connect({ platform = "twitch", ...options }) {
-      requireDirect(platform);
+      requireAvailable(platform);
       if (platform === "twitch") return connectTwitchIrcChat(options);
       const controller = new AbortController();
       let closed = false, active;
@@ -3698,11 +3717,8 @@ function createBrowserChatSource(config = {}) {
       }
       options.signal?.addEventListener("abort", close, { once: true });
       options.onStateChange?.("connecting");
-      void connectKickChat({
-        ...options,
+      const callbacks = {
         signal: controller.signal,
-        emitInitialHistory: false,
-        socket: { resolvePublicPusher: config.loadKickPublicTransport ?? loadKickPublicTransport },
         onEvent: (event) => {
           if (!closed) options.onEvent(event);
         },
@@ -3710,21 +3726,25 @@ function createBrowserChatSource(config = {}) {
           if (!closed) options.onStateChange?.(state);
         },
         onError: (error) => {
-          if (!closed) options.onError?.(error);
+          if (!closed) options.onError?.(platform === "youtube" ? new Error(error.message.replaceAll(youtubeKey, "[redacted]")) : error);
         }
-      }).then((connection) => {
+      };
+      const pending3 = platform === "youtube" ? connectYouTubeChat({ videoId: options.channel, apiKey: youtubeKey, apiKeyHeader: true, minPollMs: 1e4, emitInitialHistory: false, ...callbacks }) : connectKickChat({ ...options, emitInitialHistory: false, socket: { resolvePublicPusher: config.loadKickPublicTransport ?? loadKickPublicTransport }, ...callbacks });
+      void pending3.then((connection) => {
         if (closed) connection.close();
         else active = connection;
       }, (error) => {
         if (closed) return;
         options.onStateChange?.("error");
-        options.onError?.(error instanceof Error ? error : new Error("Kick browser connection failed"));
+        const message = error instanceof Error ? error.message : platform + " browser connection failed";
+        options.onError?.(new Error(platform === "youtube" ? message.replaceAll(youtubeKey, "[redacted]") : message));
       });
       return { close };
     },
     async emotes(channel, platform = "twitch") {
-      requireDirect(platform);
+      requireAvailable(platform);
       if (platform === "twitch") return fetchChannelEmotesDetailed(channel);
+      if (platform === "youtube") return { emotes: {}, complete: true };
       const resolved = await resolveKickChannel(channel);
       const results = await Promise.all([fetchGlobalSevenTv(), ...resolved.channelId ? [fetchKickChannelSevenTv(resolved.channelId)] : []]);
       return { emotes: mergeCandidates(results.flatMap((r) => r.candidates)), complete: results.every((r) => r.status.ok) };

@@ -1,3 +1,5 @@
+import {watchBrowserYouTubeKey} from '../src/youtube-browser-key';
+import {createParentPreviewPackets} from '../src/browser-preview-packets';
 import {getPreferredLiveCapability,connectPreferredSource} from '../src/browser-live-client';
 import { createOverlayBridge } from '../src/bridge';
 import { createEmoteChorusDetector } from '../src/emote-chorus';
@@ -129,6 +131,15 @@ const receiveLiveSignal=(signal:Parameters<NonNullable<typeof eventOverlay>['rec
 let hostedFeeds:ReturnType<typeof createSourceSubscriptions<HostedPacket>>|null=null;
 type HostedPacket={type:'event';value:OverlayLiveEvent}|{type:'status';value:WireLiveStatus}|{type:'signal';value:Parameters<NonNullable<typeof eventOverlay>['receive']>[0]};
 let pendingSources:ViewerSource[]|null=null;
+let activeViewerSources:ViewerSource[]=[];
+let directBrowserMode=false;
+const parentPackets=createParentPreviewPackets(window.parent,location.origin);
+const onParentPacket=(event:MessageEvent)=>{if(preview&&window.parent!==window)parentPackets.receive(event);};
+window.addEventListener('message',onParentPacket);
+const stopWatchingYouTubeKey=watchBrowserYouTubeKey(()=>{
+  if(!directBrowserMode||(preview&&window.parent!==window))return;
+  for(const source of activeViewerSources.filter(item=>item.platform==='youtube'))hostedFeeds?.reconnect(source);
+});
 const onPreviewSources=(event:MessageEvent)=>{
   if(!preview||event.source!==window.parent||event.origin!==location.origin||event.data?.type!=='overlay-kit-preview-sources'||!Array.isArray(event.data.sources))return;
   const sources:ViewerSource[]=event.data.sources.flatMap((item:unknown)=>{
@@ -148,6 +159,7 @@ if(liveEnabled||(preview&&window.parent!==window)) void getPreferredLiveCapabili
   if(!capability)return;
   const params=new URLSearchParams(location.search);
   if(capability.mode==='hosted'||capability.mode==='browser'){
+    directBrowserMode=capability.mode==='browser';
     let sources=liveEnabled?readViewerSources(params):[];
     if(liveEnabled&&!sources.length&&!params.has('source')&&!params.has('channel')){
       const platform=normalizeViewerPlatform(params.get('platform'))??capability.platform;
@@ -155,9 +167,11 @@ if(liveEnabled||(preview&&window.parent!==window)) void getPreferredLiveCapabili
       if(channel)sources=[{platform,channel}];
     }
     const allowed=(items:readonly ViewerSource[])=>items.filter(source=>capability.platforms.includes(source.platform));
-    const sessions=createSourceSubscriptions<HostedPacket>((source,receive)=>connectPreferredSource(capability,source,
+    const sessions=createSourceSubscriptions<HostedPacket>((source,receive)=>{
+      if(directBrowserMode&&preview&&window.parent!==window&&source.platform==='youtube')return parentPackets.open(source,receive);
+      return connectPreferredSource(capability,source,
       value=>receive({type:'event',value}),value=>receive({type:'status',value}),value=>receive({type:'signal',value}),
-    ),(source,packet)=>{
+    );},(source,packet)=>{
       const key=sourceKey(source);
       if(packet.type==='event')receiveLiveEvent(packet.value);
       else if(packet.type==='signal')receiveLiveSignal(packet.value);
@@ -172,7 +186,7 @@ if(liveEnabled||(preview&&window.parent!==window)) void getPreferredLiveCapabili
       previewGate.connectivityChanged(connectedSources.size>0);
     });
     hostedFeeds={
-      sync:items=>sessions.sync(allowed(items)),
+      sync:items=>{activeViewerSources=allowed(items);sessions.sync(activeViewerSources);},
       reconnect:source=>sessions.reconnect(source),dispose:()=>sessions.dispose(),
     };
     hostedFeeds.sync(pendingSources??sources);
@@ -260,6 +274,7 @@ const onPreviewTrigger=(event:MessageEvent)=>{
 };
 window.addEventListener('message',onPreviewTrigger);
 window.addEventListener('pagehide', () => {
+  stopWatchingYouTubeKey();window.removeEventListener('message',onParentPacket);
   hostedFeeds?.dispose();window.removeEventListener('message',onPreviewSources);
   for(const feed of liveFeeds)feed.dispose(); bridge?.dispose();
   triggerDirector?.dispose();triggerPresentation?.dispose();

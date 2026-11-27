@@ -20,7 +20,7 @@ export default defineConfig({
             }).join('\n')
           : '',
       },
-      input: { editor: here('index.html'), wall: here('wall.html'), chat: here('chat.html'), avatars: here('avatars.html'), events: here('events.html') },
+      input: { youtubeSetup:here('youtube-setup.html'),editor: here('index.html'), wall: here('wall.html'), chat: here('chat.html'), avatars: here('avatars.html'), events: here('events.html') },
     },
   },
   test: { environment: 'jsdom' },

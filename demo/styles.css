@@ -1141,3 +1141,11 @@ body.editor-surface .trigger-rules-actions{display:flex;flex-wrap:wrap;gap:5px}
 body.editor-surface .trigger-rules-actions button{background:var(--control-face,#26343a);border:1px solid var(--control-edge,#455b58);color:var(--text,#e1efea);padding:6px 8px;font-size:10px;border-radius:6px}
 body.editor-surface .trigger-rules-report{color:var(--muted,#9db7aa);font-size:10px}
 body.editor-surface .trigger-rules-report[data-invalid="true"]{color:#e9b78f}
+
+.youtube-key-controls {display:grid;gap:8px;min-width:0;width:100%;font-size:12px;}
+.youtube-key-controls label {display:grid;gap:5px;}
+.youtube-key-controls input {width:100%;min-width:0;box-sizing:border-box;padding:8px;border-radius:6px;border:1px solid #526b63;background:#182a27;color:#edf8f3;}
+.youtube-key-controls button {justify-self:start;}
+.youtube-key-controls a,.youtube-setup a {color:#b8f3d9;}
+body.youtube-setup {margin:0;padding:24px;background:#142521;color:#e7f2ec;font:14px/1.55 system-ui,sans-serif;overflow:auto;}
+.youtube-setup main {max-width:540px;margin:0 auto;}

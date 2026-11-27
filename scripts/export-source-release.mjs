@@ -14,7 +14,7 @@ if(!out.endsWith('.zip'))throw Error('Destination must end in .zip');
 if(git(['status','--porcelain','--untracked-files=normal']).trim())throw Error('Commit reviewed changes before exporting');
 const roots=['.github/workflows/pages.yml','.gitignore','AGENTS.md','LICENSE','NOTICE','README.md','TECHNICAL.md','THIRD_PARTY_NOTICES.txt',
  'api','avatars.html','chat.html','demo','docs','events.html','index.html','licenses','package.json','pnpm-lock.yaml',
- 'pnpm-workspace.yaml','public','scripts','server','src','tests','tsconfig.json','vendor','vercel.json','vite.config.ts','wall.html'];
+ 'pnpm-workspace.yaml','public','scripts','server','src','tests','tsconfig.json','vendor','vercel.json','vite.config.ts','wall.html','youtube-setup.html'];
 const paths=git(['ls-tree','-r','--name-only','-z','HEAD','--',...roots]).split('\0').filter(Boolean);
 for(const p of paths){
  if(/(?:^|\/)(?:\.git|\.meristem|node_modules|local-art|\.oauth-accounts\.json|\.live-channel\.json)(?:\/|$)/i.test(p)||

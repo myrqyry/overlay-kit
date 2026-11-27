@@ -1,3 +1,4 @@
+import {createYouTubeKeyControls} from './youtube-key-controls';
 import {createServiceBadge} from '../src/renderers';
 
 export type AccountMode='checking'|'local'|'hosted'|'preview'|'browser';
@@ -30,13 +31,14 @@ export function createAccountPanel({root,notice,feedback,fetcher=fetch,navigate=
  function render(){
   notice.textContent=mode==='checking'?'Checking relay availability…':mode==='hosted'
    ?'Account sign-in is available only in the local relay. This hosted editor uses server-managed credentials where required.'
-   :mode==='browser'?'Twitch and Kick public chat connect directly. Run pnpm live for account authorization and other providers.'
+   :mode==='browser'?'Twitch and Kick connect anonymously. YouTube has an optional API-key preview. Run pnpm live for anonymous YouTube, TikTok and account authorization.'
    :mode==='preview'?'No live relay is available in this preview. Run pnpm dev or pnpm live to manage local accounts.'
    :loading?'Checking local account status…':failed?'Could not read local account status. Close and reopen Accounts to retry.'
    :'Manage account authorization for the local relay. Accounts belong to a platform, not an individual channel.';
   for(const {provider,state,actions} of rows){
    actions.replaceChildren();
    const id=provider.id;
+   if(mode==='browser'&&id==='youtube'){state.textContent='Optional API key';state.dataset.connected='false';createYouTubeKeyControls(actions);continue;}
    const connected=status?.connected[id]===true,configured=status?.configured[id]===true;
    const label=id==='tiktok'?'No sign-in':mode!=='local'?'Local authorization only':loading?'Checking…':!status?'Status unavailable':connected?'Signed in':configured?'Not signed in':'App not configured';
    state.textContent=label;state.dataset.connected=String(mode==='local'&&connected);

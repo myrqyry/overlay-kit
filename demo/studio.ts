@@ -1,3 +1,5 @@
+import {watchBrowserYouTubeKey} from '../src/youtube-browser-key';
+import type {BrowserPreviewPacket} from '../src/browser-preview-packets';
 import {getPreferredLiveCapability,connectPreferredSource} from '../src/browser-live-client';
 import { createOverlayBridge } from '../src/bridge';
 import { connectLiveSource, type WireLiveStatus } from '../src/live-client';
@@ -176,7 +178,7 @@ function renderLive(status:WireLiveStatus) {
           +' · Emotes: '+(detail?.emotes??'idle')+' · Badges: '+(detail?.badges??'idle')
           +(detail?.error?' · '+detail.error:'');
       }).join('; ')
-    : directBrowserLive?'Browser-direct Twitch and Kick chat. Other providers: run pnpm live locally.':'Disconnected. Add a live-chat source.';
+    : directBrowserLive?'Browser-direct Twitch and Kick. YouTube: optional API key in Accounts. TikTok: local relay.':'Disconnected. Add a live-chat source.';
 }
 async function commandLive(action: 'connect'|SourceAction,target?:ViewerSource) {
   const platform=target?.platform??normalizeViewerPlatform(livePlatform.value)??'twitch';
@@ -282,7 +284,7 @@ void getPreferredLiveCapability().then(async capability=>{
   if(capability.mode==='hosted'||capability.mode==='browser'){
     hostedLive=true;
     directBrowserLive=capability.mode==='browser';
-    liveStatus.textContent=directBrowserLive?'Browser-direct Twitch and Kick chat. Other providers: run pnpm live locally.':'Disconnected. Add a live-chat source.';
+    liveStatus.textContent=directBrowserLive?'Browser-direct Twitch and Kick. YouTube: optional API key in Accounts. TikTok: local relay.':'Disconnected. Add a live-chat source.';
 
     const defaultChannel=normalizeViewerChannel(capability.channel,capability.platform);
     selectedHostedSources=restoreHostedViewerSources(
@@ -301,7 +303,10 @@ void getPreferredLiveCapability().then(async capability=>{
     platformPicker.sync();
     renderSourceChips(selectedHostedSources);
     hostedSession=createSourceSubscriptions<WireLiveStatus>(
-      (source,receive)=>connectPreferredSource(capability,source,recordSampleAssets,receive),
+      (source,receive)=>connectPreferredSource(capability,source,event=>{
+        recordSampleAssets(event);publishBrowserPreviewPacket(source,{type:'event',value:event});
+      },status=>{receive(status);publishBrowserPreviewPacket(source,{type:'status',value:status});},
+      signal=>publishBrowserPreviewPacket(source,{type:'signal',value:signal})),
       (source,status)=>{
         const detail=status.sources?.find(item=>item.platform===source.platform&&item.channel===source.channel)??status;
         sourceStatuses.set(sourceKey(source),detail);
@@ -723,12 +728,28 @@ function rebuildPresets(selected = 'custom-current') {
   syncPresetActions();
 }
 const previewFrames:Record<OverlayEditorView,HTMLIFrameElement>={wall,chat,avatars,events};
+function publishBrowserPreviewPacket(source:ViewerSource,packet:BrowserPreviewPacket,frame?:HTMLIFrameElement){
+  if(!directBrowserLive||source.platform!=='youtube')return;
+  for(const target of frame?[frame]:Object.values(previewFrames)){
+    if(target.src!=='about:blank')target.contentWindow?.postMessage({type:'overlay-kit-preview-live-packet',source,packet},location.origin);
+  }
+}
+const stopWatchingYouTubeKey=watchBrowserYouTubeKey(()=>{
+  if(!directBrowserLive)return;
+  for(const source of selectedHostedSources.filter(item=>item.platform==='youtube')){
+    sendHostedSources(source);hostedSession?.reconnect(source);
+  }
+});
 function sendHostedSources(reconnect?:ViewerSource,frame?:HTMLIFrameElement){
   if(!hostedLive)return;
   for(const target of frame?[frame]:Object.values(previewFrames)){
     if(target.src==='about:blank')continue;
     target.contentWindow?.postMessage({type:'overlay-kit-preview-sources',
       sources:selectedHostedSources,reconnect},location.origin);
+    for(const source of selectedHostedSources){
+      const current=sourceStatuses.get(sourceKey(source));
+      if(current)publishBrowserPreviewPacket(source,{type:'status',value:current},target);
+    }
   }
 }
 
@@ -961,7 +982,7 @@ input<HTMLButtonElement>('send-burst').addEventListener('click', () => {
 });
 window.addEventListener('pagehide', () => {
   for(const timer of copyTimers.values())clearTimeout(timer);copyTimers.clear();
-  tabActions.dispose();bridge.dispose(); hostedSession?.dispose();sourceChips.dispose();accountPanel.dispose(); liveFeed?.dispose(); fontPicker?.dispose(); platformPicker.dispose();
+  stopWatchingYouTubeKey();tabActions.dispose();bridge.dispose(); hostedSession?.dispose();sourceChips.dispose();accountPanel.dispose(); liveFeed?.dispose(); fontPicker?.dispose(); platformPicker.dispose();
 }, { once:true });
 rebuildPresets();
 syncControls();
